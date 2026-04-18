@@ -23,10 +23,10 @@ const MOCK_TRAFFIC = { down: 12.4, up: 1.8 }
 const MOCK_DEVICES = { used: 2, limit: 5 }
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
-  background: '#1A1A1A',
-  backdropFilter: 'none',
-  border: `1px solid #2A2A2A`,
-  boxShadow: 'none',
+  background: 'rgba(26, 26, 26, 0.35)',
+  backdropFilter: 'blur(10px)',
+  border: `1px solid rgba(255, 255, 255, 0.08)`,
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
   borderRadius: 12,
   ...extra,
 })
@@ -35,6 +35,12 @@ const tileStyle: CSSProperties = {
   ...glass({ padding: '14px 12px' }),
   display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
   textAlign: 'left', minHeight: 92, cursor: 'pointer',
+  background: 'rgba(255, 255, 255, 0.03)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+  position: 'relative',
+  overflow: 'hidden',
 }
 
 function Tile({ icon: Icon, title, subtitle, onClick }: {
@@ -42,15 +48,31 @@ function Tile({ icon: Icon, title, subtitle, onClick }: {
 }) {
   return (
     <button onClick={onClick} style={tileStyle}>
+      {/* Gradient overlay on hover */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), transparent 70%)',
+        opacity: 0,
+        transition: 'opacity 0.3s ease',
+        pointerEvents: 'none',
+      }} className="tile-glow" />
+
       <div style={{
         width: 32, height: 32, borderRadius: 8,
-        background: '#2A2A2A',
-        border: `1px solid #3A3A3A`,
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: `1px solid rgba(255, 255, 255, 0.1)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backdropFilter: 'blur(5px)',
+        position: 'relative',
+        zIndex: 1,
       }}>
         <Icon size={15} color="#FFFFFF" />
       </div>
-      <div>
+      <div style={{ position: 'relative', zIndex: 1 }}>
         <p style={{ fontSize: 11, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.3, lineHeight: 1.2 }}>
           {title}
         </p>
@@ -287,7 +309,9 @@ export default function HomeScreen() {
       </div>
 
       {/* Rotating Globe Banner */}
-      <RotatingGlobe />
+      <div style={{ marginBottom: -150 }}>
+        <RotatingGlobe />
+      </div>
 
       {/* Hero */}
       {sub.active
