@@ -1,8 +1,9 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Bell, Menu, X, Sparkles, CreditCard, Users, MessageCircle, Info, User, LogOut, ArrowLeft } from 'lucide-react'
+import { Home, Bell, Menu, X, Sparkles, CreditCard, Users, MessageCircle, Info, User, LogOut, ArrowLeft, RotateCcw } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import ParticleBackground from './ParticleBackground'
 import { useLang } from '../i18n/LangContext'
+import { useSub } from '../context/SubContext'
 
 const BLUE  = '#FFFFFF'
 const WHITE = '#FFFFFF'
@@ -15,6 +16,7 @@ const MENU_LABELS_EN = ['Home', 'Plans', 'Balance', 'Referrals', 'Support', 'Inf
 
 export default function Layout() {
   const { lang, toggle, tr } = useLang()
+  const { deactivate } = useSub()
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
@@ -283,6 +285,20 @@ export default function Layout() {
 
         {/* Logout */}
         <div style={{ borderTop: '1px solid #2A2A2A', padding: '8px 0 24px' }}>
+          <button
+            onClick={() => {
+              deactivate()
+              setMenuOpen(false)
+            }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+              padding: '14px 20px', color: '#FCD34D', fontSize: 14, fontWeight: 500,
+              background: 'none', border: 'none', cursor: 'pointer',
+            }}
+          >
+            <RotateCcw size={18} color="#FCD34D" />
+            {lang === 'ru' ? 'Сбросить подписку' : 'Reset subscription'}
+          </button>
           <button style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 14,
             padding: '14px 20px', color: '#E05555', fontSize: 14, fontWeight: 500,
