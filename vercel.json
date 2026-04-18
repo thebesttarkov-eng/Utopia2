@@ -1,3 +1,4 @@
 {
+  "name": "utopia-miniapp",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

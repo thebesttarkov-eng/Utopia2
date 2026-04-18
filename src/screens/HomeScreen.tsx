@@ -36,7 +36,7 @@ const tileStyle: CSSProperties = {
   textAlign: 'left', minHeight: 92, cursor: 'pointer',
 }
 
-function Tile({ icon: Icon, title, subtitle, onClick, accent = G }: {
+function Tile({ icon: Icon, title, subtitle, onClick }: {
   icon: typeof Zap; title: string; subtitle: string; onClick: () => void; accent?: string
 }) {
   return (
