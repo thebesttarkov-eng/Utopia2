@@ -9,13 +9,10 @@ import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
 
 // ── Palette ───────────────────────────────────────────────
-const G      = '#FFFFFF'
 const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
 const AMBER  = '#D0D0D0'
-const ACCENT = '#6366F1'
-const ACCENT_LIGHT = '#818CF8'
 
 // ── MOCK DATA (TODO: заменить на API из 3x-ui/Marzban) ────
 const MOCK_KEY = 'vless://a3f2e1c5-9b47-4e2a-8d1f-7c6b9a0e4f3d@nl.utopia-vpn.net:443?encryption=none&security=reality&type=tcp&sni=yahoo.com#Utopia-NL'
@@ -41,8 +38,8 @@ const tileStyle: CSSProperties = {
   overflow: 'hidden',
 }
 
-function Tile({ icon: Icon, title, subtitle, onClick, accent }: {
-  icon: typeof Zap; title: string; subtitle: string; onClick: () => void; accent?: string
+function Tile({ icon: Icon, title, subtitle, onClick }: {
+  icon: typeof Zap; title: string; subtitle: string; onClick: () => void
 }) {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -258,7 +255,7 @@ function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: ()
 }
 
 // ── State: ACTIVE — key hero ──────────────────────────────
-function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
+function ActiveHero({ lang, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
   const [copied, setCopied] = useState(false)
   const [revealed, setRevealed] = useState(false)
 
