@@ -3,15 +3,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap, Globe, Smartphone, Copy, Check, ExternalLink,
-  Gift, Users, Shield, Download, Settings2, MapPin, Sparkles,
+  Gift, Users, Shield, Download, Settings2, MapPin,
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
 
 // ── Palette ───────────────────────────────────────────────
+const G      = '#FFFFFF'
 const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
+const AMBER  = '#D0D0D0'
 
 // ── MOCK DATA (TODO: заменить на API из 3x-ui/Marzban) ────
 const MOCK_KEY = 'vless://a3f2e1c5-9b47-4e2a-8d1f-7c6b9a0e4f3d@nl.utopia-vpn.net:443?encryption=none&security=reality&type=tcp&sni=yahoo.com#Utopia-NL'
@@ -20,81 +22,38 @@ const MOCK_TRAFFIC = { down: 12.4, up: 1.8 }
 const MOCK_DEVICES = { used: 2, limit: 5 }
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
-  background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(20,20,20,0.98) 100%)',
-  backdropFilter: 'blur(20px)',
-  border: `1px solid rgba(255,255,255,0.08)`,
-  boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-  borderRadius: 16,
+  background: '#1A1A1A',
+  backdropFilter: 'none',
+  border: `1px solid #2A2A2A`,
+  boxShadow: 'none',
+  borderRadius: 12,
   ...extra,
 })
 
 const tileStyle: CSSProperties = {
-  ...glass({ padding: '16px 14px' }),
-  display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
-  textAlign: 'left', minHeight: 100, cursor: 'pointer',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
+  ...glass({ padding: '14px 12px' }),
+  display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
+  textAlign: 'left', minHeight: 92, cursor: 'pointer',
 }
 
 function Tile({ icon: Icon, title, subtitle, onClick }: {
-  icon: typeof Zap; title: string; subtitle: string; onClick: () => void
+  icon: typeof Zap; title: string; subtitle: string; onClick: () => void; accent?: string
 }) {
-  const [isHovered, setIsHovered] = useState(false)
-
   return (
-    <button
-      onClick={onClick}
-      style={{
-        ...tileStyle,
-        transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
-        boxShadow: isHovered
-          ? '0 12px 40px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
-          : '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Gradient overlay on hover */}
+    <button onClick={onClick} style={tileStyle}>
       <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(129,140,248,0.05) 100%)',
-        opacity: isHovered ? 1 : 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        width: 36, height: 36, borderRadius: 10,
-        background: isHovered
-          ? 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)'
-          : 'linear-gradient(135deg, #2A2A2A 0%, #1F1F1F 100%)',
-        border: `1px solid ${isHovered ? 'rgba(99,102,241,0.5)' : '#3A3A3A'}`,
+        width: 32, height: 32, borderRadius: 8,
+        background: '#2A2A2A',
+        border: `1px solid #3A3A3A`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.3s ease',
-        boxShadow: isHovered ? '0 4px 12px rgba(99,102,241,0.4)' : 'none',
-        position: 'relative',
-        zIndex: 1,
       }}>
-        <Icon size={16} color="#FFFFFF" />
+        <Icon size={15} color="#FFFFFF" />
       </div>
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <p style={{
-          fontSize: 12,
-          fontWeight: 700,
-          color: TEXT,
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          letterSpacing: 0.3,
-          lineHeight: 1.3,
-          marginBottom: 2,
-        }}>
+      <div>
+        <p style={{ fontSize: 11, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.3, lineHeight: 1.2 }}>
           {title}
         </p>
-        <p style={{ fontSize: 10, color: TEXT2, lineHeight: 1.4 }}>
+        <p style={{ fontSize: 9.5, color: TEXT2, marginTop: 2, lineHeight: 1.3 }}>
           {subtitle}
         </p>
       </div>
@@ -109,75 +68,36 @@ function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: ()
     : [{ icon: Zap, t: '1 Gbps' },   { icon: Globe, t: '5 countries' }, { icon: Smartphone, t: 'Happ' }]
 
   return (
-    <div style={{
-      ...glass({ padding: '24px 20px' }),
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 16,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Animated gradient background */}
-      <div style={{
-        position: 'absolute',
-        top: -100,
-        right: -100,
-        width: 200,
-        height: 200,
-        background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
-        borderRadius: '50%',
-        animation: 'pulse 3s ease-in-out infinite',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+    <div style={glass({ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 14 })}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{
-          width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-          border: '2px solid rgba(99,102,241,0.3)',
+          width: 46, height: 46, borderRadius: '50%',
+          background: '#2A2A2A',
+          border: '1.5px solid #3A3A3A',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
-          boxShadow: '0 8px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
         }}>
-          <Shield size={26} color="#FFFFFF" />
+          <Shield size={22} color="#FFFFFF" />
         </div>
         <div>
-          <p style={{
-            fontSize: 14,
-            fontWeight: 800,
-            color: TEXT,
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: 0.5,
-            marginBottom: 4,
-          }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.4 }}>
             {lang === 'ru' ? 'ПОДПИСКА НЕ АКТИВНА' : 'NO SUBSCRIPTION'}
           </p>
-          <p style={{ fontSize: 12, color: TEXT2, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 11, color: TEXT2, marginTop: 2, lineHeight: 1.4 }}>
             {lang === 'ru' ? 'Оформи, чтобы получить ключ' : 'Get one to receive a key'}
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
         {benefits.map(({ icon: Icon, t }, i) => (
           <div key={i} style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 7,
-            background: 'linear-gradient(135deg, rgba(42,42,42,0.8) 0%, rgba(31,31,31,0.9) 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
-            padding: '10px 10px',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            flex: 1, display: 'flex', alignItems: 'center', gap: 6,
+            background: '#2A2A2A', border: '1px solid #3A3A3A',
+            borderRadius: 8, padding: '7px 8px',
           }}>
-            <Icon size={14} color="#818CF8" />
-            <span style={{
-              fontSize: 11,
-              color: TEXT,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontWeight: 600,
-            }}>{t}</span>
+            <Icon size={12} color="#FFFFFF" />
+            <span style={{ fontSize: 10, color: TEXT, fontFamily: 'monospace', fontWeight: 600 }}>{t}</span>
           </div>
         ))}
       </div>
@@ -186,67 +106,31 @@ function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: ()
         onClick={onBuy}
         style={{
           width: '100%',
-          background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-          color: '#FFFFFF',
-          borderRadius: 12,
-          padding: '16px',
-          fontSize: 14,
-          fontWeight: 700,
-          letterSpacing: 0.5,
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          textTransform: 'uppercase',
+          background: '#FFFFFF',
+          color: '#0E0E0E',
+          borderRadius: 10, padding: '13px',
+          fontSize: 13, fontWeight: 700, letterSpacing: 0.5,
+          fontFamily: 'monospace', textTransform: 'uppercase',
           border: 'none',
-          boxShadow: '0 8px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          position: 'relative',
-          zIndex: 1,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)'
-          e.currentTarget.style.boxShadow = '0 12px 32px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.2)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)'
-          e.currentTarget.style.boxShadow = '0 8px 24px rgba(99,102,241,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
         }}
       >
-        <Sparkles size={16} style={{ display: 'inline', marginRight: 8, verticalAlign: 'middle' }} />
-        {lang === 'ru' ? 'ПОЛУЧИТЬ КЛЮЧ' : 'GET KEY'}
+        {lang === 'ru' ? 'ПОЛУЧИТЬ КЛЮЧ →' : 'GET KEY →'}
       </button>
 
       <button
         onClick={onTrial}
         style={{
           width: '100%',
-          background: 'rgba(99,102,241,0.1)',
-          border: '1px solid rgba(99,102,241,0.3)',
-          color: '#818CF8',
-          borderRadius: 12,
-          padding: '14px',
-          fontSize: 13,
-          fontWeight: 600,
-          letterSpacing: 0.3,
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          position: 'relative',
-          zIndex: 1,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(99,102,241,0.15)'
-          e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(99,102,241,0.1)'
-          e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)'
+          background: 'transparent',
+          border: '1px solid #2A2A2A',
+          color: '#FFFFFF',
+          borderRadius: 10, padding: '10px',
+          fontSize: 12, fontWeight: 600, letterSpacing: 0.3,
+          fontFamily: 'monospace',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         }}
       >
-        <Gift size={15} />
+        <Gift size={13} />
         {lang === 'ru' ? 'ПРОБНЫЕ 3 ДНЯ БЕСПЛАТНО' : 'TRY 3 DAYS FREE'}
       </button>
     </div>
@@ -254,7 +138,7 @@ function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: ()
 }
 
 // ── State: ACTIVE — key hero ──────────────────────────────
-function ActiveHero({ lang, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
+function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
   const [copied, setCopied] = useState(false)
   const [revealed, setRevealed] = useState(false)
 
@@ -275,182 +159,89 @@ function ActiveHero({ lang, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string;
   const lowDays = daysLeft <= 7
 
   return (
-    <div style={{
-      ...glass({ padding: '18px 18px 20px' }),
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 14,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Success gradient background */}
-      <div style={{
-        position: 'absolute',
-        top: -80,
-        left: -80,
-        width: 160,
-        height: 160,
-        background: 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)',
-        borderRadius: '50%',
-        pointerEvents: 'none',
-      }} />
-
+    <div style={glass({ padding: '14px 15px', display: 'flex', flexDirection: 'column', gap: 12 })}>
       {/* top meta row */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        fontSize: 11,
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, fontFamily: 'monospace' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#22C55E',
-            boxShadow: '0 0 12px rgba(34,197,94,0.6)',
+            width: 7, height: 7, borderRadius: '50%',
+            background: G, boxShadow: `0 0 8px ${G}`,
             animation: 'dot-pulse 2s ease-in-out infinite',
           }} />
-          <span style={{
-            color: '#22C55E',
-            fontWeight: 700,
-            letterSpacing: 0.8,
-            fontSize: 12,
-          }}>
+          <span style={{ color: G, fontWeight: 700, letterSpacing: 0.8 }}>
             {lang === 'ru' ? 'АКТИВНА' : 'ACTIVE'}
           </span>
-          <span style={{ color: MUTED, margin: '0 5px' }}>·</span>
-          <span style={{ fontSize: 13 }}>{MOCK_LOCATION.flag}</span>
-          <span style={{ color: TEXT, fontWeight: 600, fontSize: 12 }}>{MOCK_LOCATION.name}</span>
+          <span style={{ color: MUTED, margin: '0 4px' }}>·</span>
+          <span style={{ fontSize: 12 }}>{MOCK_LOCATION.flag}</span>
+          <span style={{ color: TEXT, fontWeight: 600 }}>{MOCK_LOCATION.name}</span>
         </div>
         <div style={{
-          background: lowDays ? 'rgba(251,191,36,0.15)' : 'rgba(99,102,241,0.15)',
-          border: `1px solid ${lowDays ? 'rgba(251,191,36,0.3)' : 'rgba(99,102,241,0.3)'}`,
-          borderRadius: 8,
-          padding: '4px 10px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
+          color: lowDays ? AMBER : '#FFFFFF',
+          fontWeight: 700, fontSize: 12,
         }}>
-          <span style={{
-            color: lowDays ? '#FCD34D' : '#818CF8',
-            fontWeight: 700,
-            fontSize: 13,
-          }}>
-            {daysLeft}
-          </span>
-          <span style={{ color: TEXT2, fontWeight: 500, fontSize: 10 }}>
-            {lang === 'ru' ? 'дн' : 'd'}
-          </span>
+          {daysLeft}<span style={{ color: TEXT2, fontWeight: 500, marginLeft: 3 }}>{lang === 'ru' ? 'дн' : 'd'}</span>
+          <span style={{ color: MUTED, margin: '0 5px' }}>·</span>
+          <span style={{ color: TEXT2, fontWeight: 500 }}>{expiresStr}</span>
         </div>
       </div>
 
       {/* key block */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{
-            fontSize: 10,
-            color: '#818CF8',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: 1,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-          }}>
-            {lang === 'ru' ? 'VLESS Ключ' : 'VLESS Key'}
+          <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.2, fontWeight: 700 }}>
+            {lang === 'ru' ? '// VLESS-КЛЮЧ' : '// VLESS KEY'}
           </p>
           <button
             onClick={() => setRevealed(v => !v)}
-            style={{
-              background: 'rgba(99,102,241,0.1)',
-              border: '1px solid rgba(99,102,241,0.3)',
-              color: '#818CF8',
-              fontSize: 10,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 0.5,
-              padding: '4px 10px',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}
+            style={{ background: 'none', color: MUTED, fontSize: 10, fontFamily: 'monospace', letterSpacing: 0.5 }}
           >
             {revealed ? (lang === 'ru' ? 'СКРЫТЬ' : 'HIDE') : (lang === 'ru' ? 'ПОКАЗАТЬ' : 'REVEAL')}
           </button>
         </div>
 
         <div style={{
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 10,
-          padding: '12px 14px',
-          fontSize: 11,
-          color: '#9CA3AF',
-          fontFamily: 'monospace',
-          wordBreak: 'break-all',
-          lineHeight: 1.6,
-          letterSpacing: 0.3,
-          maxHeight: 70,
-          overflow: 'hidden',
-          boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
+          background: '#000000',
+          border: '1px solid #2A2A2A',
+          borderRadius: 8, padding: '9px 11px',
+          fontSize: 10.5, color: '#808080',
+          fontFamily: 'monospace', wordBreak: 'break-all',
+          lineHeight: 1.5, letterSpacing: 0.2,
+          maxHeight: 66, overflow: 'hidden',
         }}>
           {masked}
         </div>
       </div>
 
       {/* actions row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, position: 'relative', zIndex: 1 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
         <button
           onClick={openInHapp}
           style={{
-            background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 100%)',
-            color: '#FFFFFF',
-            borderRadius: 10,
-            padding: '14px 16px',
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            textTransform: 'uppercase',
+            background: '#FFFFFF',
+            color: '#0E0E0E',
+            borderRadius: 10, padding: '12px',
+            fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
+            fontFamily: 'monospace', textTransform: 'uppercase',
             border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(99,102,241,0.4)',
-            transition: 'all 0.3s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)'
-            e.currentTarget.style.boxShadow = '0 6px 20px rgba(99,102,241,0.5)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.4)'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
           }}
         >
-          <ExternalLink size={15} />
-          {lang === 'ru' ? 'ОТКРЫТЬ' : 'OPEN'}
+          <ExternalLink size={14} />
+          {lang === 'ru' ? 'ОТКРЫТЬ В HAPP' : 'OPEN IN HAPP'}
         </button>
         <button
           onClick={copyKey}
           aria-label={lang === 'ru' ? 'Копировать ключ' : 'Copy key'}
           style={{
-            background: copied ? 'rgba(34,197,94,0.15)' : 'rgba(99,102,241,0.1)',
-            border: `1px solid ${copied ? 'rgba(34,197,94,0.3)' : 'rgba(99,102,241,0.3)'}`,
-            color: copied ? '#22C55E' : '#818CF8',
-            borderRadius: 10,
-            padding: '0 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer',
+            background: copied ? '#2A2A2A' : 'transparent',
+            border: `1px solid ${copied ? '#3A3A3A' : '#2A2A2A'}`,
+            color: '#FFFFFF',
+            borderRadius: 10, padding: '0 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.2s',
           }}
         >
-          {copied ? <Check size={18} /> : <Copy size={18} />}
+          {copied ? <Check size={16} /> : <Copy size={16} />}
         </button>
       </div>
     </div>
@@ -473,45 +264,22 @@ export default function HomeScreen() {
   return (
     <div className="screen" style={{ padding: '16px 13px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      {/* Modern header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 4 }}>
+      {/* Compact header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <p style={{
-            fontSize: 10,
-            color: '#818CF8',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            letterSpacing: 1.8,
-            fontWeight: 700,
-            textTransform: 'uppercase',
-          }}>
-            UTOPIA.VPN
+          <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
+            // UTOPIA.VPN
           </p>
-          <h1 style={{
-            fontSize: 24,
-            fontWeight: 800,
-            background: 'linear-gradient(135deg, #FFFFFF 0%, #B0B0B0 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            letterSpacing: -0.5,
-            marginTop: 4,
-          }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
             {lang === 'ru' ? `Привет, ${userName}` : `Hi, ${userName}`}
           </h1>
         </div>
         <span style={{
-          background: sub.active
-            ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.1) 100%)'
-            : 'rgba(99,102,241,0.1)',
-          border: `1px solid ${sub.active ? 'rgba(34,197,94,0.3)' : 'rgba(99,102,241,0.3)'}`,
-          borderRadius: 20,
-          padding: '6px 12px',
-          fontSize: 11,
-          color: sub.active ? '#22C55E' : '#818CF8',
-          fontWeight: 700,
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          letterSpacing: 0.5,
-          boxShadow: sub.active ? '0 0 12px rgba(34,197,94,0.2)' : 'none',
+          background: sub.active ? '#2A2A2A' : '#2A2A2A',
+          border: `1px solid #3A3A3A`,
+          borderRadius: 20, padding: '4px 10px',
+          fontSize: 10, color: sub.active ? '#FFFFFF' : '#B0B0B0', fontWeight: 600,
+          fontFamily: 'monospace', letterSpacing: 0.5,
         }}>
           {sub.active ? (lang === 'ru' ? '● ON' : '● ON') : (lang === 'ru' ? '○ OFF' : '○ OFF')}
         </span>
@@ -542,93 +310,33 @@ export default function HomeScreen() {
           title={lang === 'ru' ? 'ЛОКАЦИИ' : 'LOCATIONS'}
           subtitle={lang === 'ru' ? '5 стран · NL · DE…' : '5 countries · NL · DE…'}
           onClick={() => navigate('/sub')}
+          accent={AMBER}
         />
         <Tile
           icon={Users}
           title={lang === 'ru' ? 'ДРУЗЬЯ' : 'FRIENDS'}
           subtitle={lang === 'ru' ? '+30 дн за друга' : '+30d per friend'}
           onClick={() => { /* TODO: /referrals */ }}
+          accent={AMBER}
         />
       </div>
 
-      {/* Modern stats strip — only if active */}
+      {/* Compact stats strip — only if active */}
       {sub.active && (
-        <div style={{
-          ...glass({ padding: '14px 16px' }),
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: 12,
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: 9,
-              color: '#818CF8',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 1,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'ru' ? 'Загрузка' : 'Download'}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-              <span style={{
-                fontSize: 16,
-                color: TEXT,
-                fontWeight: 800,
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>
-                {MOCK_TRAFFIC.down}
-              </span>
-              <span style={{ fontSize: 10, color: TEXT2, fontWeight: 600 }}>ГБ</span>
-            </div>
+        <div style={glass({ padding: '10px 13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, fontFamily: 'monospace' })}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ color: MUTED }}>↓</span>
+            <span style={{ color: G, fontWeight: 800 }}>{MOCK_TRAFFIC.down}</span>
+            <span style={{ color: TEXT2 }}>ГБ</span>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: 9,
-              color: '#818CF8',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 1,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'ru' ? 'Отдача' : 'Upload'}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-              <span style={{
-                fontSize: 16,
-                color: TEXT,
-                fontWeight: 800,
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>
-                {MOCK_TRAFFIC.up}
-              </span>
-              <span style={{ fontSize: 10, color: TEXT2, fontWeight: 600 }}>ГБ</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ color: MUTED }}>↑</span>
+            <span style={{ color: G, fontWeight: 800 }}>{MOCK_TRAFFIC.up}</span>
+            <span style={{ color: TEXT2 }}>ГБ</span>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{
-              fontSize: 9,
-              color: '#818CF8',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: 1,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-            }}>
-              {lang === 'ru' ? 'Устройства' : 'Devices'}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-              <span style={{
-                fontSize: 16,
-                color: TEXT,
-                fontWeight: 800,
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>
-                {MOCK_DEVICES.used}
-              </span>
-              <span style={{ fontSize: 12, color: TEXT2, fontWeight: 600 }}>/{MOCK_DEVICES.limit}</span>
-            </div>
+          <div style={{ color: TEXT2 }}>
+            <span style={{ color: MUTED }}>{lang === 'ru' ? 'устр:' : 'dev:'}</span>{' '}
+            <span style={{ color: TEXT, fontWeight: 700 }}>{MOCK_DEVICES.used}/{MOCK_DEVICES.limit}</span>
           </div>
         </div>
       )}
