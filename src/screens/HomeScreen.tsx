@@ -12,7 +12,6 @@ import { useSub } from '../context/SubContext'
 const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
-const AMBER  = '#D0D0D0'
 
 // ── MOCK DATA (TODO: заменить на API из 3x-ui/Marzban) ────
 const MOCK_KEY = 'vless://a3f2e1c5-9b47-4e2a-8d1f-7c6b9a0e4f3d@nl.utopia-vpn.net:443?encryption=none&security=reality&type=tcp&sni=yahoo.com#Utopia-NL'
@@ -543,14 +542,12 @@ export default function HomeScreen() {
           title={lang === 'ru' ? 'ЛОКАЦИИ' : 'LOCATIONS'}
           subtitle={lang === 'ru' ? '5 стран · NL · DE…' : '5 countries · NL · DE…'}
           onClick={() => navigate('/sub')}
-          accent={AMBER}
         />
         <Tile
           icon={Users}
           title={lang === 'ru' ? 'ДРУЗЬЯ' : 'FRIENDS'}
           subtitle={lang === 'ru' ? '+30 дн за друга' : '+30d per friend'}
           onClick={() => { /* TODO: /referrals */ }}
-          accent={AMBER}
         />
       </div>
 
