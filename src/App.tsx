@@ -9,6 +9,7 @@ const InstallScreen   = lazy(() => import('./screens/InstallScreen'))
 const InstallGuideIOS = lazy(() => import('./screens/InstallGuideIOS'))
 const EditorScreen    = lazy(() => import('./screens/EditorScreen'))
 const SubScreen       = lazy(() => import('./screens/SubScreen'))
+const BalanceScreen   = lazy(() => import('./screens/BalanceScreen'))
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { err: Error | null }> {
   state = { err: null as Error | null }
@@ -51,6 +52,7 @@ export default function App() {
                   <Route path="install" element={<InstallScreen />} />
                   <Route path="install/ios" element={<InstallGuideIOS />} />
                   <Route path="sub" element={<SubScreen />} />
+                  <Route path="balance" element={<BalanceScreen />} />
                 </Route>
                 <Route path="/editor" element={<EditorScreen />} />
               </Routes>

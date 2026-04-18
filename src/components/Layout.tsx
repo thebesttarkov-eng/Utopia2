@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Bell, Menu, X, Sparkles, CreditCard, Users, MessageCircle, Info, User, LogOut, ArrowLeft, RotateCcw } from 'lucide-react'
+import { Home, Bell, Menu, X, Sparkles, CreditCard, Users, MessageCircle, Info, User, LogOut, ArrowLeft, RotateCcw, Wallet } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import ParticleBackground from './ParticleBackground'
 import { useLang } from '../i18n/LangContext'
@@ -34,8 +34,9 @@ export default function Layout() {
   }, [lang])
 
   const nav = useMemo(() => [
-    { to: '/',    icon: Home,     label: tr('nav_home') },
-    { to: '/sub', icon: Sparkles, label: tr('nav_sub')  },
+    { to: '/',       icon: Home,     label: tr('nav_home') },
+    { to: '/balance', icon: Wallet,  label: tr('nav_balance') },
+    { to: '/sub',    icon: Sparkles, label: tr('nav_sub')  },
   ], [tr])
 
   return (
