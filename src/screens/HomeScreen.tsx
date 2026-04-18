@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react'
-import { useState, memo } from 'react'
+import { useState, memo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap, Globe, Smartphone, Copy, Check, ExternalLink,
-  Gift, Users, Shield, Download, Settings2, MapPin,
+  Gift, Shield, Download, Settings2, Plus, Trash2, Laptop,
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
@@ -16,11 +16,24 @@ const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
 const AMBER  = '#D0D0D0'
 
-// ── MOCK DATA (TODO: заменить на API из 3x-ui/Marzban) ────
+// ── MOCK DATA ─────────────────────────────────────────────
 const MOCK_KEY = 'vless://a3f2e1c5-9b47-4e2a-8d1f-7c6b9a0e4f3d@nl.utopia-vpn.net:443?encryption=none&security=reality&type=tcp&sni=yahoo.com#Utopia-NL'
 const MOCK_LOCATION = { flag: '🇳🇱', name: 'Amsterdam' }
 const MOCK_TRAFFIC = { down: 12.4, up: 1.8 }
-const MOCK_DEVICES = { used: 2, limit: 5 }
+
+interface Device {
+  id: string
+  name: string
+  type: 'iphone' | 'android' | 'windows' | 'mac' | 'linux'
+  connected: boolean
+  lastSeen: string
+}
+
+const MOCK_DEVICES: Device[] = [
+  { id: '1', name: 'iPhone 15 Pro Max', type: 'iphone', connected: true, lastSeen: 'Сейчас' },
+  { id: '2', name: 'MacBook Pro 16"', type: 'mac', connected: true, lastSeen: 'Сейчас' },
+  { id: '3', name: 'Samsung Galaxy S24', type: 'android', connected: false, lastSeen: '2 ч назад' },
+]
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
   background: 'rgba(26, 26, 26, 0.85)',
@@ -32,61 +45,140 @@ const glass = (extra?: CSSProperties): CSSProperties => ({
   ...extra,
 })
 
-const tileStyle: CSSProperties = {
-  ...glass({ padding: '14px 12px' }),
-  display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
-  textAlign: 'left', minHeight: 92, cursor: 'pointer',
-  background: 'rgba(255, 255, 255, 0.03)',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.08)',
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-  position: 'relative',
-  overflow: 'hidden',
-}
+// ── Glitch key text ────────────────────────────────────────
+const CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
-const Tile = memo(function Tile({ icon: Icon, title, subtitle, onClick }: {
-  icon: typeof Zap; title: string; subtitle: string; onClick: () => void; accent?: string
-}) {
+const GlitchKey = memo(function GlitchKey({ text, revealed }: { text: string; revealed: boolean }) {
+  const [displayed, setDisplayed] = useState('')
+  const [glitching, setGlitching] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    if (revealed) {
+      setDisplayed(text)
+      setGlitching(false)
+      return
+    }
+
+    // Собираем ключ посимвольно с глитчем
+    let idx = 0
+    const interval = setInterval(() => {
+      if (idx >= text.length) {
+        clearInterval(interval)
+        setGlitching(false)
+        return
+      }
+      setGlitching(true)
+      // Показываем случайные символы до текущей позиции
+      let partial = ''
+      for (let i = 0; i < text.length; i++) {
+        if (i < idx) {
+          partial += text[i]
+        } else if (i === idx) {
+          // Глитч символ
+          partial += CHARS[Math.floor(Math.random() * CHARS.length)]
+        } else {
+          // Непоказанная часть — случайные символы
+          partial += CHARS[Math.floor(Math.random() * CHARS.length)]
+        }
+      }
+      setDisplayed(partial)
+      idx++
+    }, 40)
+
+    return () => {
+      clearInterval(interval)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [revealed, text, mounted])
+
   return (
-    <button onClick={onClick} style={tileStyle}>
-      {/* Gradient overlay on hover */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1), transparent 70%)',
-        opacity: 0,
-        transition: 'opacity 0.3s ease',
-        pointerEvents: 'none',
-      }} className="tile-glow" />
-
-      <div style={{
-        width: 32, height: 32, borderRadius: 8,
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: `1px solid rgba(255, 255, 255, 0.1)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backdropFilter: 'blur(5px)',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <Icon size={15} color="#FFFFFF" />
-      </div>
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <p style={{ fontSize: 11, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.3, lineHeight: 1.2 }}>
-          {title}
-        </p>
-        <p style={{ fontSize: 9.5, color: TEXT2, marginTop: 2, lineHeight: 1.3 }}>
-          {subtitle}
-        </p>
-      </div>
-    </button>
+    <div style={{
+      background: '#000000',
+      border: `1px solid ${glitching ? 'rgba(255,255,255,0.3)' : '#2A2A2A'}`,
+      borderRadius: 8, padding: '9px 11px',
+      fontSize: 10.5, color: glitching ? 'rgba(255,255,255,0.7)' : '#808080',
+      fontFamily: 'monospace', wordBreak: 'break-all',
+      lineHeight: 1.5, letterSpacing: 0.2,
+      maxHeight: 66, overflow: 'hidden',
+      position: 'relative',
+      animation: glitching ? 'titan-glitch 0.1s ease infinite' : 'none',
+    }}>
+      {displayed || '•' + '•'.repeat(40)}
+    </div>
   )
 })
 
-// ── State: NO SUB — hero CTA ──────────────────────────────
-const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: () => void; lang: 'ru' | 'en' }) {
+// ── Device row ──────────────────────────────────────────────
+const DeviceIcon = ({ type }: { type: Device['type'] }) => {
+  const size = 14
+  switch (type) {
+    case 'iphone': return <Smartphone size={size} color={G} />
+    case 'android': return <Smartphone size={size} color={TEXT2} />
+    case 'mac': return <Laptop size={size} color={G} />
+    case 'windows': return <Laptop size={size} color={TEXT2} />
+    case 'linux': return <Laptop size={size} color={MUTED} />
+    default: return <Laptop size={size} color={MUTED} />
+  }
+}
+
+const DeviceRow = memo(function DeviceRow({ device, onRemove }: {
+  device: Device; onRemove: (id: string) => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 12px',
+      background: 'rgba(255,255,255,0.03)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      borderRadius: 10,
+    }}>
+      <div style={{
+        width: 32, height: 32, borderRadius: 8,
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <DeviceIcon type={device.type} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: TEXT, fontFamily: 'monospace', marginBottom: 2 }}>
+          {device.name}
+        </p>
+        <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace' }}>
+          {device.lastSeen}
+        </p>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: device.connected ? G : MUTED,
+          boxShadow: device.connected ? '0 0 6px rgba(255,255,255,0.6)' : 'none',
+        }}/>
+        <button
+          onClick={() => onRemove(device.id)}
+          style={{
+            background: 'none', border: 'none', padding: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <Trash2 size={12} color={MUTED} />
+        </button>
+      </div>
+    </div>
+  )
+})
+
+// ── State: NO SUB ───────────────────────────────────────────
+const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: {
+  onBuy: () => void; onTrial: () => void; lang: 'ru' | 'en'
+}) {
   const benefits = lang === 'ru'
     ? [{ icon: Zap, t: '1 Гбит/с' }, { icon: Globe, t: '5 стран' }, { icon: Smartphone, t: 'Happ' }]
     : [{ icon: Zap, t: '1 Gbps' },   { icon: Globe, t: '5 countries' }, { icon: Smartphone, t: 'Happ' }]
@@ -161,8 +253,10 @@ const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: { onBu
   )
 })
 
-// ── State: ACTIVE — key hero ──────────────────────────────
-const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
+// ── State: ACTIVE — key hero ───────────────────────────────
+const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: {
+  lang: 'ru' | 'en'; expiresStr: string; daysLeft: number
+}) {
   const [copied, setCopied] = useState(false)
   const [revealed, setRevealed] = useState(false)
 
@@ -179,7 +273,6 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: { la
     window.location.href = `happ://add/${encoded}`
   }
 
-  const masked = revealed ? MOCK_KEY : MOCK_KEY.slice(0, 20) + '••••••••••••••' + MOCK_KEY.slice(-10)
   const lowDays = daysLeft <= 7
 
   return (
@@ -199,17 +292,14 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: { la
           <span style={{ fontSize: 12 }}>{MOCK_LOCATION.flag}</span>
           <span style={{ color: TEXT, fontWeight: 600 }}>{MOCK_LOCATION.name}</span>
         </div>
-        <div style={{
-          color: lowDays ? AMBER : '#FFFFFF',
-          fontWeight: 700, fontSize: 12,
-        }}>
+        <div style={{ color: lowDays ? AMBER : '#FFFFFF', fontWeight: 700, fontSize: 12 }}>
           {daysLeft}<span style={{ color: TEXT2, fontWeight: 500, marginLeft: 3 }}>{lang === 'ru' ? 'дн' : 'd'}</span>
           <span style={{ color: MUTED, margin: '0 5px' }}>·</span>
           <span style={{ color: TEXT2, fontWeight: 500 }}>{expiresStr}</span>
         </div>
       </div>
 
-      {/* key block */}
+      {/* key block with glitch */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.2, fontWeight: 700 }}>
@@ -222,18 +312,7 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: { la
             {revealed ? (lang === 'ru' ? 'СКРЫТЬ' : 'HIDE') : (lang === 'ru' ? 'ПОКАЗАТЬ' : 'REVEAL')}
           </button>
         </div>
-
-        <div style={{
-          background: '#000000',
-          border: '1px solid #2A2A2A',
-          borderRadius: 8, padding: '9px 11px',
-          fontSize: 10.5, color: '#808080',
-          fontFamily: 'monospace', wordBreak: 'break-all',
-          lineHeight: 1.5, letterSpacing: 0.2,
-          maxHeight: 66, overflow: 'hidden',
-        }}>
-          {masked}
-        </div>
+        <GlitchKey text={MOCK_KEY} revealed={revealed} />
       </div>
 
       {/* actions row */}
@@ -277,13 +356,21 @@ export default function HomeScreen() {
   const { lang } = useLang()
   const navigate = useNavigate()
   const sub = useSub()
+  const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES)
 
-  const tgUser = (window as { Telegram?: { WebApp?: { initDataUnsafe?: { user?: { first_name?: string } } } } }).Telegram?.WebApp?.initDataUnsafe?.user
+  const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
   const userName = tgUser?.first_name || 'Максим'
 
   const expiresStr = sub.expiresAt
     ? sub.expiresAt.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: '2-digit' })
     : '—'
+
+  const connectedCount = devices.filter(d => d.connected).length
+  const limit = 5 // из подписки
+
+  function removeDevice(id: string) {
+    setDevices(prev => prev.filter(d => d.id !== id))
+  }
 
   return (
     <div className="screen" style={{ padding: '16px 13px', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -299,7 +386,7 @@ export default function HomeScreen() {
           </h1>
         </div>
         <span style={{
-          background: sub.active ? '#2A2A2A' : '#2A2A2A',
+          background: '#2A2A2A',
           border: `1px solid #3A3A3A`,
           borderRadius: 20, padding: '4px 10px',
           fontSize: 10, color: sub.active ? '#FFFFFF' : '#B0B0B0', fontWeight: 600,
@@ -314,41 +401,109 @@ export default function HomeScreen() {
         <RotatingGlobe />
       </div>
 
-      {/* Hero */}
+      {/* Hero — ключ или приглашение */}
       {sub.active
         ? <ActiveHero lang={lang} expiresStr={expiresStr} daysLeft={sub.daysLeft} />
         : <InactiveHero lang={lang} onBuy={() => navigate('/sub')} onTrial={() => sub.activate('1m', 2, { countryCode: 'NL', name: 'Amsterdam', flag: '🇳🇱' })} />
       }
 
-      {/* 2×2 quick actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <Tile
-          icon={Download}
-          title={lang === 'ru' ? 'УСТАНОВИТЬ' : 'INSTALL'}
-          subtitle={lang === 'ru' ? 'Happ, Win, Mac, iOS' : 'Happ, Win, Mac, iOS'}
-          onClick={() => navigate('/install')}
-        />
-        <Tile
-          icon={Settings2}
-          title={sub.active ? (lang === 'ru' ? 'ПРОДЛИТЬ' : 'RENEW') : (lang === 'ru' ? 'ПОДПИСКА' : 'PLAN')}
-          subtitle={lang === 'ru' ? 'Тарифы и оплата' : 'Plans & billing'}
-          onClick={() => navigate('/sub')}
-        />
-        <Tile
-          icon={MapPin}
-          title={lang === 'ru' ? 'ЛОКАЦИИ' : 'LOCATIONS'}
-          subtitle={lang === 'ru' ? '5 стран · NL · DE…' : '5 countries · NL · DE…'}
-          onClick={() => navigate('/sub')}
-          accent={AMBER}
-        />
-        <Tile
-          icon={Users}
-          title={lang === 'ru' ? 'ДРУЗЬЯ' : 'FRIENDS'}
-          subtitle={lang === 'ru' ? '+30 дн за друга' : '+30d per friend'}
-          onClick={() => { /* TODO: /referrals */ }}
-          accent={AMBER}
-        />
-      </div>
+      {/* Devices panel — только когда активна */}
+      {sub.active && (
+        <>
+          {/* Header + Add button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
+              // {lang === 'ru' ? 'УСТРОЙСТВА' : 'DEVICES'}
+            </p>
+            <span style={{
+              background: 'rgba(26,26,26,0.85)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 20, padding: '3px 10px',
+              fontSize: 10, color: TEXT, fontFamily: 'monospace', fontWeight: 600,
+            }}>
+              {connectedCount}/{limit}
+            </span>
+          </div>
+
+          {/* Device list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {devices.map(device => (
+              <DeviceRow key={device.id} device={device} onRemove={removeDevice} />
+            ))}
+          </div>
+
+          {/* Add device button */}
+          <button
+            onClick={() => navigate('/install')}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              padding: '12px',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 10,
+              color: TEXT, fontSize: 12, fontWeight: 600, fontFamily: 'monospace',
+            }}
+          >
+            <Plus size={14} color={G} />
+            {lang === 'ru' ? 'Подключить устройство' : 'Connect device'}
+          </button>
+        </>
+      )}
+
+      {/* Quick actions — только когда НЕ активна */}
+      {!sub.active && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <button
+            onClick={() => navigate('/install')}
+            style={{
+              ...glass({ padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minHeight: 92, cursor: 'pointer', position: 'relative', overflow: 'hidden' }),
+              background: 'rgba(255, 255, 255, 0.03)',
+            }}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Download size={15} color="#FFFFFF" />
+            </div>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.3, lineHeight: 1.2 }}>
+                {lang === 'ru' ? 'УСТАНОВИТЬ' : 'INSTALL'}
+              </p>
+              <p style={{ fontSize: 9.5, color: TEXT2, marginTop: 2, lineHeight: 1.3 }}>
+                {lang === 'ru' ? 'Happ, Win, Mac, iOS' : 'Happ, Win, Mac, iOS'}
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/sub')}
+            style={{
+              ...glass({ padding: '14px 12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minHeight: 92, cursor: 'pointer', position: 'relative', overflow: 'hidden' }),
+              background: 'rgba(255, 255, 255, 0.03)',
+            }}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Settings2 size={15} color="#FFFFFF" />
+            </div>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.3, lineHeight: 1.2 }}>
+                {lang === 'ru' ? 'ПОДПИСКА' : 'PLAN'}
+              </p>
+              <p style={{ fontSize: 9.5, color: TEXT2, marginTop: 2, lineHeight: 1.3 }}>
+                {lang === 'ru' ? 'Тарифы и оплата' : 'Plans & billing'}
+              </p>
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Compact stats strip — only if active */}
       {sub.active && (
@@ -363,10 +518,18 @@ export default function HomeScreen() {
             <span style={{ color: G, fontWeight: 800 }}>{MOCK_TRAFFIC.up}</span>
             <span style={{ color: TEXT2 }}>ГБ</span>
           </div>
-          <div style={{ color: TEXT2 }}>
-            <span style={{ color: MUTED }}>{lang === 'ru' ? 'устр:' : 'dev:'}</span>{' '}
-            <span style={{ color: TEXT, fontWeight: 700 }}>{MOCK_DEVICES.used}/{MOCK_DEVICES.limit}</span>
-          </div>
+          <button
+            onClick={() => navigate('/sub')}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 8, padding: '4px 10px',
+              color: TEXT2, fontSize: 10, fontFamily: 'monospace', fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {lang === 'ru' ? 'ПРОДЛИТЬ →' : 'RENEW →'}
+          </button>
         </div>
       )}
 
