@@ -23,8 +23,9 @@ export default function Layout() {
   const canGoBack = location.pathname !== '/'
 
   const tgUser     = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
-  const userName   = tgUser?.first_name || 'Максим'
-  const userNick   = tgUser?.username ? `@${tgUser.username}` : '@utopia_user'
+  const sanitize = (str: string) => str.replace(/[<>'"]/g, '')
+  const userName   = sanitize(tgUser?.first_name || 'Максим')
+  const userNick   = tgUser?.username ? `@${sanitize(tgUser.username)}` : '@utopia_user'
   const userInitial = userName[0]?.toUpperCase() || 'M'
 
   const menuItems = useMemo(() => {

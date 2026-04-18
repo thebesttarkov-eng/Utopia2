@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Zap, Globe, Smartphone, Copy, Check, ExternalLink,
@@ -44,7 +44,7 @@ const tileStyle: CSSProperties = {
   overflow: 'hidden',
 }
 
-function Tile({ icon: Icon, title, subtitle, onClick }: {
+const Tile = memo(function Tile({ icon: Icon, title, subtitle, onClick }: {
   icon: typeof Zap; title: string; subtitle: string; onClick: () => void; accent?: string
 }) {
   return (
@@ -83,10 +83,10 @@ function Tile({ icon: Icon, title, subtitle, onClick }: {
       </div>
     </button>
   )
-}
+})
 
 // ── State: NO SUB — hero CTA ──────────────────────────────
-function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: () => void; lang: 'ru' | 'en' }) {
+const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: () => void; lang: 'ru' | 'en' }) {
   const benefits = lang === 'ru'
     ? [{ icon: Zap, t: '1 Гбит/с' }, { icon: Globe, t: '5 стран' }, { icon: Smartphone, t: 'Happ' }]
     : [{ icon: Zap, t: '1 Gbps' },   { icon: Globe, t: '5 countries' }, { icon: Smartphone, t: 'Happ' }]
@@ -159,10 +159,10 @@ function InactiveHero({ onBuy, onTrial, lang }: { onBuy: () => void; onTrial: ()
       </button>
     </div>
   )
-}
+})
 
 // ── State: ACTIVE — key hero ──────────────────────────────
-function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
+const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expiresStr: string; daysLeft: number }) {
   const [copied, setCopied] = useState(false)
   const [revealed, setRevealed] = useState(false)
 
@@ -270,11 +270,11 @@ function ActiveHero({ lang, expiresStr, daysLeft }: { lang: 'ru' | 'en'; expires
       </div>
     </div>
   )
-}
+})
 
 // ── Main ──────────────────────────────────────────────────
 export default function HomeScreen() {
-  const { tr: _tr, lang } = useLang()
+  const { lang } = useLang()
   const navigate = useNavigate()
   const sub = useSub()
 
@@ -317,7 +317,7 @@ export default function HomeScreen() {
       {/* Hero */}
       {sub.active
         ? <ActiveHero lang={lang} expiresStr={expiresStr} daysLeft={sub.daysLeft} />
-        : <InactiveHero lang={lang} onBuy={() => navigate('/sub')} onTrial={() => sub.activate('1m', 2)} />
+        : <InactiveHero lang={lang} onBuy={() => navigate('/sub')} onTrial={() => sub.activate('1m', 2, { countryCode: 'NL', name: 'Amsterdam', flag: '🇳🇱' })} />
       }
 
       {/* 2×2 quick actions */}

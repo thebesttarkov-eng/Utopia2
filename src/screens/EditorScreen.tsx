@@ -1,8 +1,15 @@
 import { useState, useRef, useCallback } from 'react'
 
-const CYAN  = '#22D3EE'
-const WHITE = '#F0F6FF'
-const MUTED = '#2A3F58'
+// ── Palette (в стиле HomeScreen) ──────────────────────────
+const G      = '#FFFFFF'
+const MUTED  = '#808080'
+const TEXT   = '#FFFFFF'
+const TEXT2  = '#B0B0B0'
+const ACCENT = '#D0D0D0'
+
+const CYAN  = G
+const WHITE = TEXT
+const MUTED = '#808080'
 
 /* ─── Типы элементов ─── */
 type ElementType = 'planet' | 'astronaut' | 'titan' | 'tagline' | 'telemetry' | 'badge'

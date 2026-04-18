@@ -7,12 +7,13 @@ import {
 import { useLang } from '../i18n/LangContext'
 
 // ── Palette ───────────────────────────────────────────────
-const G      = '#39D353'
-const GDim   = 'rgba(57,211,83,0.55)'
-const TEXT   = '#D4EDD4'
-const TEXT2  = '#7AAA7A'
-const MUTED  = '#3A5A3A'
-const TILE   = '#080E08'
+const G      = '#FFFFFF'
+const GDim   = 'rgba(255,255,255,0.4)'
+const TEXT   = '#FFFFFF'
+const TEXT2  = '#B0B0B0'
+const MUTED  = '#808080'
+const TILE   = 'rgba(26,26,26,0.85)'
+
 
 // ── MOCK subscription URL (TODO: из API после покупки) ────
 const MOCK_SUB_URL = 'https://utopia-vpn.net/sub/u_a3f2e1c5'
@@ -117,12 +118,13 @@ export default function InstallScreen() {
   const platform = PLATFORMS.find(p => p.id === platformId)!
   const client = platform.clients.find(c => c.id === selectedClient) ?? platform.clients[0]
 
-  // При смене платформы — сбрасываем выбранного клиента на первого доступного
-  useEffect(() => {
-    if (!platform.clients.find(c => c.id === selectedClient)) {
-      setSelectedClient(platform.clients[0].id)
+  function changePlatform(id: PlatformId) {
+    const next = PLATFORMS.find(p => p.id === id)!
+    setPlatformId(id)
+    if (!next.clients.find(c => c.id === selectedClient)) {
+      setSelectedClient(next.clients[0].id)
     }
-  }, [platformId, platform.clients, selectedClient])
+  }
 
   function openAddSubscription() {
     if (client.scheme) {
@@ -152,8 +154,8 @@ export default function InstallScreen() {
           aria-label="QR"
           style={{
             width: 42, height: 42, borderRadius: 12,
-            background: 'rgba(57,211,83,0.06)',
-            border: '1px solid rgba(57,211,83,0.22)',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -167,8 +169,8 @@ export default function InstallScreen() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               height: 42, padding: '0 12px',
-              background: 'rgba(57,211,83,0.06)',
-              border: '1px solid rgba(57,211,83,0.22)',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 12,
               color: TEXT, fontSize: 13, fontWeight: 600,
               fontFamily: 'monospace',
@@ -191,12 +193,13 @@ export default function InstallScreen() {
               <div style={{
                 position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 11,
                 minWidth: 160,
-                background: 'rgba(8,22,8,0.98)',
+                background: 'rgba(18,18,18,0.98)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(57,211,83,0.28)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 12,
                 padding: 4,
-                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
                 animation: 'fade-up 0.18s ease both',
               }}>
                 {PLATFORMS.map(p => {
@@ -204,11 +207,11 @@ export default function InstallScreen() {
                   return (
                     <button
                       key={p.id}
-                      onClick={() => { setPlatformId(p.id); setDropdownOpen(false) }}
+                      onClick={() => { changePlatform(p.id); setDropdownOpen(false) }}
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 12px',
-                        background: active ? 'rgba(57,211,83,0.12)' : 'transparent',
+                        background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
                         borderRadius: 8,
                         color: active ? G : TEXT,
                         fontSize: 13, fontWeight: active ? 700 : 500,
@@ -238,10 +241,12 @@ export default function InstallScreen() {
                 position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 14px',
-                background: active ? 'rgba(57,211,83,0.10)' : TILE,
-                border: `1px solid ${active ? 'rgba(57,211,83,0.45)' : 'rgba(57,211,83,0.12)'}`,
+                background: active ? 'rgba(255,255,255,0.08)' : TILE,
+                border: `1px solid ${active ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.07)'}`,
                 borderRadius: 14,
-                boxShadow: active ? `0 0 18px rgba(57,211,83,0.18)` : 'none',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                boxShadow: active ? '0 0 18px rgba(255,255,255,0.08)' : '0 8px 32px rgba(0,0,0,0.37)',
                 transition: 'all 0.18s',
                 textAlign: 'left',
               }}
@@ -249,8 +254,8 @@ export default function InstallScreen() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: active ? G : (c.recommended ? '#E0A020' : MUTED),
-                  boxShadow: active ? `0 0 6px ${G}` : 'none',
+                  background: active ? '#FFFFFF' : (c.recommended ? '#D0D0D0' : MUTED),
+                  boxShadow: active ? '0 0 6px rgba(255,255,255,0.6)' : 'none',
                 }} />
                 <span style={{
                   fontSize: 14, fontWeight: 600,
@@ -273,10 +278,10 @@ export default function InstallScreen() {
                 <span style={{
                   position: 'absolute', top: -6, right: 8,
                   fontSize: 8, fontWeight: 700, letterSpacing: 0.8,
-                  color: '#E0A020',
-                  background: 'rgba(8,22,8,1)',
+                  color: '#FFFFFF',
+                  background: 'rgba(18,18,18,1)',
                   padding: '1px 6px', borderRadius: 6,
-                  border: '1px solid rgba(224,160,32,0.4)',
+                  border: '1px solid rgba(255,255,255,0.2)',
                 }}>
                   TOP
                 </span>
@@ -303,8 +308,8 @@ export default function InstallScreen() {
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '10px 16px',
-            background: 'rgba(57,211,83,0.08)',
-            border: '1px solid rgba(57,211,83,0.30)',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: 12,
             color: G, fontSize: 13, fontWeight: 700,
             fontFamily: 'monospace',
@@ -331,18 +336,18 @@ export default function InstallScreen() {
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '10px 16px',
-            background: `linear-gradient(135deg, ${G}, #23A03A)`,
-            color: '#021004',
+            background: '#FFFFFF',
+            color: '#0E0E0E',
             borderRadius: 12,
             fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
             fontFamily: 'monospace',
-            boxShadow: `0 0 16px rgba(57,211,83,0.3)`,
+            boxShadow: '0 0 16px rgba(255,255,255,0.15)',
           }}
         >
           + {t('Добавить подписку', 'Add subscription')}
         </button>
         {!client.scheme && (
-          <p style={{ marginTop: 8, fontSize: 11, color: '#E0A020', fontFamily: 'monospace' }}>
+          <p style={{ marginTop: 8, fontSize: 11, color: '#B0B0B0', fontFamily: 'monospace' }}>
             ⚠ {t(
               `${client.name} не поддерживает авто-импорт — ссылка скопируется, вставьте вручную.`,
               `${client.name} does not support auto-import — link will be copied, paste manually.`
@@ -369,12 +374,12 @@ export default function InstallScreen() {
               `Для приложений Discord, Steam используйте режим `,
               `For apps like Discord or Steam use `
             )}
-            <span style={{ color: G, fontFamily: 'monospace', fontWeight: 700 }}>TUN</span>
+            <span style={{ color: '#FFFFFF', fontFamily: 'monospace', fontWeight: 700 }}>TUN</span>
             {t(
               ` — он перехватывает трафик всех приложений. `,
               ` mode — it captures traffic of all apps. `
             )}
-            <span style={{ color: G, fontFamily: 'monospace', fontWeight: 700 }}>Proxy</span>
+            <span style={{ color: '#FFFFFF', fontFamily: 'monospace', fontWeight: 700 }}>Proxy</span>
             {t(
               ` обрабатывает только браузерные запросы.`,
               ` mode covers browser traffic only.`
@@ -404,12 +409,14 @@ export default function InstallScreen() {
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 320,
-              background: 'rgba(8,22,8,0.98)',
-              border: '1px solid rgba(57,211,83,0.32)',
+              background: 'rgba(18,18,18,0.98)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 20,
               padding: '22px 20px',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
-              boxShadow: '0 16px 60px rgba(0,0,0,0.6)',
+              boxShadow: '0 16px 60px rgba(0,0,0,0.7)',
             }}
           >
             <p style={{ fontSize: 11, fontFamily: 'monospace', color: MUTED, letterSpacing: 1.2, fontWeight: 700 }}>
@@ -417,8 +424,8 @@ export default function InstallScreen() {
             </p>
             <div style={{
               width: 200, height: 200,
-              background: 'rgba(57,211,83,0.04)',
-              border: '1px dashed rgba(57,211,83,0.35)',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px dashed rgba(255,255,255,0.15)',
               borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: GDim, fontSize: 12, fontFamily: 'monospace', textAlign: 'center', padding: 20,
@@ -435,8 +442,8 @@ export default function InstallScreen() {
               onClick={() => setQrOpen(false)}
               style={{
                 marginTop: 4, padding: '8px 18px',
-                background: 'rgba(57,211,83,0.10)',
-                border: '1px solid rgba(57,211,83,0.3)',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.15)',
                 borderRadius: 10, color: G,
                 fontSize: 12, fontWeight: 700, fontFamily: 'monospace',
               }}
@@ -461,17 +468,19 @@ function StepCard({ index, icon, title, desc, children }: {
 }) {
   return (
     <div style={{
-      background: 'rgba(8,22,8,0.97)',
-      border: '1px solid rgba(57,211,83,0.22)',
+      background: 'rgba(26, 26, 26, 0.85)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
       borderRadius: 18,
       padding: '16px 16px',
       display: 'flex', gap: 12,
-      boxShadow: '0 0 16px rgba(57,211,83,0.06)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.37)',
     }}>
       <div style={{
         width: 36, height: 36, flexShrink: 0, borderRadius: 10,
-        background: 'rgba(57,211,83,0.08)',
-        border: '1px solid rgba(57,211,83,0.25)',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
       }}>
@@ -479,7 +488,7 @@ function StepCard({ index, icon, title, desc, children }: {
         <span style={{
           position: 'absolute', top: -7, left: -7,
           width: 18, height: 18, borderRadius: '50%',
-          background: TILE, border: '1px solid rgba(57,211,83,0.35)',
+          background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.2)',
           fontSize: 10, fontWeight: 800, color: G, fontFamily: 'monospace',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>

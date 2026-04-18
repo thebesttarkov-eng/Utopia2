@@ -1,294 +1,164 @@
-import { ArrowLeft, Download, Copy, Plus, Power } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useLang } from '../i18n/LangContext'
+import { Download, Copy, Plus, Power, CheckCircle2 } from 'lucide-react'
+import type { CSSProperties } from 'react'
 
-const G = '#39D353'
-const TEXT = '#D4EDD4'
-const TEXT2 = '#7AAA7A'
-const MUTED = '#3A5A3A'
+// ── Palette (в стиле HomeScreen) ──────────────────────────
+const G      = '#FFFFFF'
+const MUTED  = '#808080'
+const TEXT   = '#FFFFFF'
+const TEXT2  = '#B0B0B0'
+const AMBER  = '#D0D0D0'
+
+const glass = (extra?: CSSProperties): CSSProperties => ({
+  background: 'rgba(26, 26, 26, 0.85)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  border: `1px solid rgba(255, 255, 255, 0.08)`,
+  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+  borderRadius: 16,
+  ...extra,
+})
 
 export default function InstallGuideIOS() {
   const navigate = useNavigate()
   const { lang } = useLang()
 
-  const steps = [
-    {
-      num: 1,
-      icon: Copy,
-      title: lang === 'ru' ? 'Скопируйте ссылку подписки' : 'Copy subscription link',
-      desc: lang === 'ru'
-        ? 'Перейдите на вашу страницу профиля в приложении Ultima и нажмите на ссылку с вашей подпиской — она скопируется автоматически'
-        : 'Go to your profile page in Ultima app and tap on your subscription link — it will be copied automatically',
-    },
-    {
-      num: 2,
-      icon: Download,
-      title: lang === 'ru' ? 'Установите приложение' : 'Install the app',
-      desc: lang === 'ru'
-        ? 'Установите v2RayTun из App Store на ваш iPhone или iPad'
-        : 'Install v2RayTun from App Store on your iPhone or iPad',
-      links: [
-        { name: 'v2RayTun', url: 'https://apps.apple.com/app/v2raytun/id6476628951' },
+  const steps = lang === 'ru'
+    ? [
+        { num: 1, icon: Copy,       title: 'Скопируйте ссылку подписки', desc: 'Перейдите на страницу профиля в боте и нажмите на ссылку подписки — она скопируется автоматически', links: [] },
+        { num: 2, icon: Download,    title: 'Установите приложение',       desc: 'Установите v2RayTun из App Store на ваш iPhone или iPad', links: [{ name: 'v2RayTun', url: 'https://apps.apple.com/app/v2raytun/id6476628951' }] },
+        { num: 3, icon: Plus,       title: 'Добавьте подписку',           desc: 'Запустите v2RayTun и нажмите «+» в правом верхнем углу. Выберите «Добавить из буфера». Если программа спросит разрешение — разрешите', links: [] },
+        { num: 4, icon: Power,      title: 'Подключитесь',                desc: 'На главном экране появится подписка Utopia. Вы увидите список локаций — нажмите на кнопку для подключения', links: [] },
       ]
-    },
-    {
-      num: 3,
-      icon: Plus,
-      title: lang === 'ru' ? 'Добавьте подписку' : 'Add subscription',
-      desc: lang === 'ru'
-        ? 'Запустите v2RayTun и нажмите на «+» в правом верхнем углу. Выберите «Добавить из буфера». Если программа спросит разрешение на вставку — разрешите'
-        : 'Launch v2RayTun and tap «+» in the top right corner. Select «Add from clipboard». If the app asks for paste permission — allow it',
-    },
-    {
-      num: 4,
-      icon: Power,
-      title: lang === 'ru' ? 'Подключитесь' : 'Connect',
-      desc: lang === 'ru'
-        ? 'На главном экране приложения появится подписка Ultima. Вы увидите список доступных локаций — нажмите на синюю кнопку для включения'
-        : 'Ultima subscription will appear on the main screen. You will see a list of available locations — tap the blue button to connect',
-    },
-  ]
+    : [
+        { num: 1, icon: Copy,       title: 'Copy subscription link',      desc: 'Go to your profile page in the bot and tap the subscription link — it will be copied automatically', links: [] },
+        { num: 2, icon: Download,    title: 'Install the app',              desc: 'Install v2RayTun from App Store on your iPhone or iPad', links: [{ name: 'v2RayTun', url: 'https://apps.apple.com/app/v2raytun/id6476628951' }] },
+        { num: 3, icon: Plus,       title: 'Add subscription',             desc: 'Launch v2RayTun and tap «+» in the top right corner. Select «Add from clipboard». Allow paste permission if asked', links: [] },
+        { num: 4, icon: Power,      title: 'Connect',                     desc: 'Utopia subscription will appear on the main screen. You\'ll see a list of locations — tap the button to connect', links: [] },
+      ]
 
   return (
-    <div style={{
-      padding: '18px 13px 100px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 16,
-      minHeight: '100vh',
-    }}>
+    <div className="screen" style={{ padding: '16px 13px 100px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: 'rgba(57,211,83,0.08)',
-            border: '1px solid rgba(57,211,83,0.2)',
-            borderRadius: 10,
-            width: 36,
-            height: 36,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <ArrowLeft size={18} color={G} />
-        </button>
-        <div>
-          <h1 style={{
-            fontSize: 24,
-            fontWeight: 900,
-            color: G,
-            letterSpacing: 0.5,
-            textTransform: 'uppercase',
-            fontFamily: 'monospace',
-          }}>
-            iOS
-          </h1>
-          <p style={{ fontSize: 12, color: TEXT2, marginTop: 2 }}>
-            {lang === 'ru' ? 'Инструкция по установке' : 'Installation guide'}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
+            // UTOPIA.INSTALL
           </p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
+            {lang === 'ru' ? 'iOS' : 'iOS'}
+          </h1>
         </div>
+        <span style={{
+          background: '#2A2A2A', border: `1px solid #3A3A3A`,
+          borderRadius: 20, padding: '4px 10px',
+          fontSize: 10, color: TEXT, fontWeight: 600, fontFamily: 'monospace', letterSpacing: 0.5,
+        }}>
+          iOS 14+
+        </span>
       </div>
 
-      {/* Platform badge */}
-      <div style={{
-        background: 'rgba(8,22,8,0.97)',
-        backdropFilter: 'blur(24px)',
-        border: '1px solid rgba(57,211,83,0.32)',
-        borderRadius: 16,
-        padding: '14px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-      }}>
+      {/* Platform card */}
+      <div style={glass({ padding: '14px 15px', display: 'flex', alignItems: 'center', gap: 12 })}>
         <div style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
-          background: 'rgba(57,211,83,0.1)',
-          border: '1px solid rgba(57,211,83,0.25)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 24,
+          width: 44, height: 44, borderRadius: 10,
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: `1px solid rgba(255, 255, 255, 0.1)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 22,
         }}>
-
+          🍎
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 700, color: TEXT, fontFamily: 'monospace' }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.4 }}>
             iPhone / iPad
           </p>
-          <p style={{ fontSize: 11, color: TEXT2, marginTop: 2 }}>
-            iOS 14.0+
+          <p style={{ fontSize: 10, color: MUTED, marginTop: 2, fontFamily: 'monospace', letterSpacing: 0.5 }}>
+            v2RayTun
           </p>
         </div>
-        <div style={{
-          background: 'rgba(57,211,83,0.1)',
-          border: '1px solid rgba(57,211,83,0.28)',
-          borderRadius: 8,
-          padding: '4px 10px',
-          fontSize: 10,
-          color: G,
-          fontWeight: 700,
-          fontFamily: 'monospace',
-          letterSpacing: 0.5,
-        }}>
-          ACTIVE
-        </div>
+        <CheckCircle2 size={18} color={G} />
       </div>
 
       {/* Steps */}
       {steps.map((step, i) => (
         <div key={i} style={{
-          background: 'rgba(8,22,8,0.97)',
-          backdropFilter: 'blur(24px)',
-          border: '1px solid rgba(57,211,83,0.32)',
-          borderRadius: 16,
-          padding: '16px',
+          ...glass({ padding: '14px 15px' }),
+          display: 'flex', gap: 12,
           position: 'relative',
-          overflow: 'hidden',
         }}>
-          {/* Step number corner */}
+          {/* Step badge */}
           <div style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: 40,
-            height: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 28,
-            fontWeight: 900,
-            color: 'rgba(57,211,83,0.08)',
-            fontFamily: 'monospace',
-            pointerEvents: 'none',
+            position: 'absolute', top: 10, right: 12,
+            fontSize: 32, fontWeight: 900, color: 'rgba(255,255,255,0.04)',
+            fontFamily: 'monospace', lineHeight: 1, userSelect: 'none',
           }}>
             {step.num}
           </div>
 
-          <div style={{ display: 'flex', gap: 14 }}>
-            {/* Icon */}
-            <div style={{
-              width: 44,
-              height: 44,
-              borderRadius: 10,
-              background: 'rgba(57,211,83,0.1)',
-              border: '1px solid rgba(57,211,83,0.25)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <step.icon size={20} color={G} />
-            </div>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: `1px solid rgba(255, 255, 255, 0.1)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <step.icon size={16} color={G} />
+          </div>
 
-            {/* Content */}
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{
-                  fontSize: 10,
-                  color: MUTED,
-                  fontFamily: 'monospace',
-                  letterSpacing: 1,
-                  fontWeight: 700,
-                }}>
-                  ШАГ {step.num}
-                </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.2, fontWeight: 600, marginBottom: 4 }}>
+              // ШАГ {step.num}
+            </p>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.2, marginBottom: 6 }}>
+              {step.title}
+            </h3>
+            <p style={{ fontSize: 11, color: TEXT2, lineHeight: 1.5, marginBottom: step.links.length ? 10 : 0 }}>
+              {step.desc}
+            </p>
+            {step.links.length > 0 && (
+              <div style={{ display: 'flex', gap: 8 }}>
+                {step.links.map((link, j) => (
+                  <a
+                    key={j}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '7px 12px',
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      border: `1px solid rgba(255, 255, 255, 0.1)`,
+                      borderRadius: 10,
+                      color: TEXT, fontSize: 11, fontWeight: 700,
+                      fontFamily: 'monospace', textDecoration: 'none',
+                    }}
+                  >
+                    <Download size={12} />
+                    {link.name}
+                  </a>
+                ))}
               </div>
-              <h3 style={{
-                fontSize: 16,
-                fontWeight: 800,
-                color: TEXT,
-                marginBottom: 6,
-                fontFamily: 'monospace',
-                letterSpacing: 0.3,
-              }}>
-                {step.title}
-              </h3>
-              <p style={{
-                fontSize: 13,
-                color: TEXT2,
-                lineHeight: 1.5,
-                marginBottom: step.links ? 12 : 0,
-              }}>
-                {step.desc}
-              </p>
-
-              {/* Links */}
-              {step.links && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {step.links.map((link, j) => (
-                    <a
-                      key={j}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        padding: '8px 14px',
-                        borderRadius: 8,
-                        background: 'rgba(57,211,83,0.15)',
-                        border: '1px solid rgba(57,211,83,0.35)',
-                        color: G,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        textDecoration: 'none',
-                        fontFamily: 'monospace',
-                        letterSpacing: 0.3,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <Download size={12} />
-                      {link.name}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       ))}
 
-      {/* Info tip */}
-      <div style={{
-        background: 'rgba(57,211,83,0.05)',
-        border: '1px solid rgba(57,211,83,0.15)',
-        borderRadius: 12,
-        padding: '12px 14px',
-        marginTop: 8,
-      }}>
-        <p style={{
-          fontSize: 11,
-          color: TEXT2,
-          lineHeight: 1.6,
-          fontFamily: 'monospace',
-        }}>
+      {/* Tips */}
+      <div style={glass({ padding: '12px 14px' })}>
+        <p style={{ fontSize: 11, color: TEXT2, lineHeight: 1.6, fontFamily: 'monospace' }}>
           💡 {lang === 'ru'
-            ? 'Если у вас подписка на несколько устройств — просто отправьте ссылку другу, он сможет использовать её без входа в бот'
-            : 'If you have a multi-device subscription — just send the link to a friend, they can use it without logging into the bot'}
+            ? 'Если у вас подписка на несколько устройств — просто отправьте ссылку другу'
+            : 'Multi-device? Just send the link to a friend — no bot login needed'}
         </p>
       </div>
 
-      {/* Footer tip */}
-      <div style={{
-        background: 'rgba(57,211,83,0.05)',
-        border: '1px solid rgba(57,211,83,0.15)',
-        borderRadius: 12,
-        padding: '12px 14px',
-      }}>
-        <p style={{
-          fontSize: 11,
-          color: TEXT2,
-          lineHeight: 1.6,
-          fontFamily: 'monospace',
-        }}>
+      <div style={glass({ padding: '12px 14px' })}>
+        <p style={{ fontSize: 11, color: TEXT2, lineHeight: 1.6, fontFamily: 'monospace' }}>
           💡 {lang === 'ru'
-            ? 'Если возникли проблемы — напишите в поддержку через бот'
-            : 'If you have issues — contact support via bot'}
+            ? 'Возникли проблемы? Напишите в поддержку через бот'
+            : 'Having issues? Contact support via the bot'}
         </p>
       </div>
 
