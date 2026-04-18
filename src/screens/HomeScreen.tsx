@@ -23,8 +23,9 @@ const MOCK_TRAFFIC = { down: 12.4, up: 1.8 }
 const MOCK_DEVICES = { used: 2, limit: 5 }
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
-  background: 'rgba(26, 26, 26, 0.35)',
+  background: 'rgba(26, 26, 26, 0.85)',
   backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   border: `1px solid rgba(255, 255, 255, 0.08)`,
   boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
   borderRadius: 12,
