@@ -4,12 +4,9 @@ import { useState, useRef, useCallback } from 'react'
 const G      = '#FFFFFF'
 const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
-const TEXT2  = '#B0B0B0'
-const ACCENT = '#D0D0D0'
 
 const CYAN  = G
 const WHITE = TEXT
-const MUTED = '#808080'
 
 /* ─── Типы элементов ─── */
 type ElementType = 'planet' | 'astronaut' | 'titan' | 'tagline' | 'telemetry' | 'badge'

@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useLang } from '../i18n/LangContext'
 import { Download, Copy, Plus, Power, CheckCircle2 } from 'lucide-react'
 import type { CSSProperties } from 'react'
@@ -8,7 +7,6 @@ const G      = '#FFFFFF'
 const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
-const AMBER  = '#D0D0D0'
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
   background: 'rgba(26, 26, 26, 0.85)',
@@ -21,7 +19,6 @@ const glass = (extra?: CSSProperties): CSSProperties => ({
 })
 
 export default function InstallGuideIOS() {
-  const navigate = useNavigate()
   const { lang } = useLang()
 
   const steps = lang === 'ru'

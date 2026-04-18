@@ -1,8 +1,8 @@
 import { memo, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Download, CloudDownload, CheckCircle2, ChevronDown, ExternalLink,
-  QrCode, Monitor, Apple, Smartphone, Cpu,
+  Download, CloudDownload, CheckCircle2, ExternalLink,
+  Monitor, Apple, Smartphone, Cpu,
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
 
@@ -169,9 +169,7 @@ export default function InstallScreen() {
   const navigate = useNavigate()
   const [platformId, setPlatformId] = useState<PlatformId>('windows')
   const [selectedClient, setSelectedClient] = useState<ClientId>('happ')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [qrOpen, setQrOpen] = useState(false)
-
+  
   useEffect(() => {
     const tg = (window as any).Telegram?.WebApp
     if (tg?.BackButton) {
