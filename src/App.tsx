@@ -17,17 +17,17 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { err: Error | nu
     if (this.state.err) {
       return (
         <div style={{
-          minHeight: '100vh', background: '#020D05', color: '#39D353',
+          minHeight: '100vh', background: '#0E0E0E', color: '#FFFFFF',
           fontFamily: 'monospace', padding: 24, display: 'flex',
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
         }}>
           <p style={{ fontSize: 16, fontWeight: 700 }}>// SYSTEM ERROR</p>
-          <p style={{ fontSize: 12, opacity: 0.7 }}>{this.state.err.message}</p>
+          <p style={{ fontSize: 12, opacity: 0.7, color: '#B0B0B0' }}>{this.state.err.message}</p>
           <button
             onClick={() => location.reload()}
             style={{
-              marginTop: 8, background: 'rgba(57,211,83,0.08)',
-              border: '1px solid rgba(57,211,83,0.3)', color: '#39D353',
+              marginTop: 8, background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF',
               borderRadius: 8, padding: '8px 16px', fontFamily: 'monospace',
             }}
           >RELOAD</button>
