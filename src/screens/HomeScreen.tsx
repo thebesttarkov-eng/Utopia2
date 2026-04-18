@@ -286,14 +286,14 @@ export default function HomeScreen() {
         </span>
       </div>
 
+      {/* Rotating Globe Banner */}
+      <RotatingGlobe />
+
       {/* Hero */}
       {sub.active
         ? <ActiveHero lang={lang} expiresStr={expiresStr} daysLeft={sub.daysLeft} />
         : <InactiveHero lang={lang} onBuy={() => navigate('/sub')} onTrial={() => sub.activate('1m', 2)} />
       }
-
-      {/* Rotating Globe Banner */}
-      <RotatingGlobe />
 
       {/* 2×2 quick actions */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
