@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
+import { RotatingGlobe } from '../components/RotatingGlobe'
 
 // ── Palette ───────────────────────────────────────────────
 const G      = '#FFFFFF'
@@ -290,6 +291,9 @@ export default function HomeScreen() {
         ? <ActiveHero lang={lang} expiresStr={expiresStr} daysLeft={sub.daysLeft} />
         : <InactiveHero lang={lang} onBuy={() => navigate('/sub')} onTrial={() => sub.activate('1m', 2)} />
       }
+
+      {/* Rotating Globe Banner */}
+      <RotatingGlobe />
 
       {/* 2×2 quick actions */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>

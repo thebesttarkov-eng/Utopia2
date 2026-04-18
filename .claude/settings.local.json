@@ -5,7 +5,15 @@
       "Bash(gh repo *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git reset *)",
+      "Bash(pnpm install *)",
+      "Bash(taskkill /PID 15856 /F)",
+      "Bash(powershell.exe -Command \"taskkill /PID 15856 /F\")",
+      "WebSearch",
+      "Bash(git show *)",
+      "Bash(cp /tmp/homescreen_backup.tsx src/screens/HomeScreen.tsx)",
+      "Bash(cp /tmp/index_backup.css src/index.css)"
     ]
   }
 }
