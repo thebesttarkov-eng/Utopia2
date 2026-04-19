@@ -6,6 +6,15 @@ import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { FeatureCollection, Feature } from 'geojson'
 import { useSub } from '../context/SubContext'
 
+// 50 популярных стран (ISO alpha-2)
+const AVAILABLE_COUNTRIES = [
+  'US', 'GB', 'DE', 'FR', 'NL', 'JP', 'AU', 'CA', 'IT', 'ES',
+  'SE', 'NO', 'DK', 'FI', 'CH', 'AT', 'BE', 'PL', 'CZ', 'PT',
+  'IE', 'NZ', 'SG', 'HK', 'KR', 'TW', 'IN', 'BR', 'MX', 'AR',
+  'CL', 'CO', 'PE', 'ZA', 'EG', 'IL', 'AE', 'SA', 'TR', 'GR',
+  'RO', 'BG', 'HU', 'HR', 'RS', 'UA', 'BY', 'LT', 'LV', 'EE'
+]
+
 export function RotatingGlobe() {
   const svgRef = useRef<SVGSVGElement>(null)
   const rotationRef = useRef(0)
@@ -20,15 +29,20 @@ export function RotatingGlobe() {
     const loadAndRender = async () => {
       if (!svgRef.current) return
 
+      console.log('[globe] Starting load...')
+
       try {
         const CACHE_KEY = 'utopia:world-atlas-110m:v2'
         let world: Topology
         const cached = typeof localStorage !== 'undefined' ? localStorage.getItem(CACHE_KEY) : null
 
         if (cached) {
+          console.log('[globe] Using cached data')
           world = JSON.parse(cached) as Topology
         } else {
+          console.log('[globe] Fetching from CDN...')
           if (!navigator.onLine) {
+            console.log('[globe] Offline, showing fallback')
             renderOfflineFallback()
             return
           }
@@ -38,7 +52,9 @@ export function RotatingGlobe() {
           try { localStorage.setItem(CACHE_KEY, text) } catch { /* quota */ }
         }
 
+        console.log('[globe] Data loaded, rendering...')
         const countries = feature(world, world.objects.countries as GeometryCollection) as FeatureCollection
+        console.log('[globe] Countries:', countries.features.length)
 
         const svg = select(svgRef.current)
         svg.selectAll('*').remove()
@@ -61,6 +77,7 @@ export function RotatingGlobe() {
           activeCountryId = found?.id ?? null
         }
 
+        // Create static elements
         const sphereGroup = svg.append('g').attr('class', 'sphere-group')
         const graticuleGroup = svg.append('g').attr('class', 'graticule-group')
         const countriesGroup = svg.append('g').attr('class', 'countries-group')
@@ -90,8 +107,15 @@ export function RotatingGlobe() {
           .attr('class', 'country')
           .attr('fill', 'none')
           .attr('stroke', (d: any) => {
+            const props = d.properties as { iso_a2?: string } | null
+            const iso = props?.iso_a2
+
             // Active country = white
             if (d.id === activeCountryId) return '#FFFFFF'
+
+            // Available countries = purple
+            if (iso && AVAILABLE_COUNTRIES.includes(iso)) return '#9333EA'
+
             // Others = gray
             return '#cccccc'
           })
@@ -112,6 +136,7 @@ export function RotatingGlobe() {
           animationRef.current = requestAnimationFrame(animate)
         }
 
+        console.log('[globe] Starting animation...')
         animate()
       } catch (error) {
         console.error('[globe] Failed to load:', error)
