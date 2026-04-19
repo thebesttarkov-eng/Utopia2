@@ -8,6 +8,7 @@ import {
 import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
 import { RotatingGlobe } from '../components/RotatingGlobe'
+import { GlobeToMapTransform } from '../components/GlobeToMapTransform'
 
 // ── Palette ───────────────────────────────────────────────
 const G      = '#FFFFFF'
@@ -451,6 +452,11 @@ export default function HomeScreen() {
       {/* Rotating Globe Banner */}
       <div style={{ marginBottom: -150 }}>
         <RotatingGlobe />
+      </div>
+
+      {/* Globe → Map Transform (preview) */}
+      <div style={{ marginBottom: 16 }}>
+        <GlobeToMapTransform />
       </div>
 
       {/* Hero — ключ или приглашение */}
