@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { useState, memo, useEffect } from 'react'
+import { useState, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Copy, Check, ExternalLink, Gift, Shield, Download, Settings2,
@@ -21,6 +21,8 @@ const MOCK_KEY = 'vless://a3f2e1c5-9b47-4e2a-8d1f-7c6b9a0e4f3d@nl.utopia-vpn.net
 const MOCK_LOCATION = { flag: '🇳🇱', name: 'Amsterdam' }
 const MOCK_TRAFFIC = { down: 12.4, up: 1.8 }
 
+const DEVICES_STORAGE_KEY = 'utopia.devices'
+
 interface Device {
   id: string
   name: string
@@ -30,13 +32,10 @@ interface Device {
   isCurrent: boolean
 }
 
-// ── Определение текущего устройства из Telegram WebApp ────
+// ── Определение текущего устройства ──────────────────────
 function getCurrentDevice(): { name: string; type: Device['type'] } {
-  // Telegram WebApp предоставляет информацию о платформе
   const tg = (window as any).Telegram?.WebApp
   const platform = tg?.platform || 'unknown'
-
-  // Определяем по UserAgent
   const ua = navigator.userAgent.toLowerCase()
 
   if (platform === 'ios' || ua.includes('iphone') || ua.includes('ipad')) {
@@ -58,26 +57,23 @@ function getCurrentDevice(): { name: string; type: Device['type'] } {
   return { name: 'Устройство', type: 'windows' }
 }
 
-// Генерируем устройства с текущим device первым
-function generateDevices(limit: number, currentDevice: { name: string; type: Device['type'] }): Device[] {
-  const templates: { name: string; type: Device['type'] }[] = [
-    currentDevice, // Текущее устройство первое
-    { name: 'Windows PC', type: 'windows' },
-    { name: 'MacBook Pro', type: 'mac' },
-    { name: 'Android', type: 'android' },
-    { name: 'iPad Pro', type: 'iphone' },
-  ]
+// ── Storage функции ───────────────────────────────────────
+function getStoredDevices(): Device[] {
+  try {
+    const raw = localStorage.getItem(DEVICES_STORAGE_KEY)
+    if (!raw) return []
+    return JSON.parse(raw)
+  } catch {
+    return []
+  }
+}
 
-  const lastSeens = ['Сейчас', '5 мин назад', '1 ч назад', '2 ч назад', 'Вчера']
-
-  return templates.slice(0, Math.min(limit, templates.length)).map((t, i) => ({
-    id: String(i + 1),
-    name: t.name,
-    type: t.type,
-    connected: i === 0, // Только первое (текущее) подключено
-    lastSeen: i === 0 ? 'Сейчас' : lastSeens[i % lastSeens.length],
-    isCurrent: i === 0,
-  }))
+function setStoredDevices(devices: Device[]) {
+  try {
+    localStorage.setItem(DEVICES_STORAGE_KEY, JSON.stringify(devices))
+  } catch {
+    // storage full or unavailable
+  }
 }
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
@@ -121,7 +117,6 @@ const DeviceRow = memo(function DeviceRow({ device, onRemove, lang }: {
       borderRadius: 10,
       position: 'relative',
     }}>
-      {/* Badge "Это вы" */}
       {device.isCurrent && (
         <span style={{
           position: 'absolute', top: -5, left: 10,
@@ -383,16 +378,35 @@ export default function HomeScreen() {
   const navigate = useNavigate()
   const sub = useSub()
 
-  // Определяем текущее устройство
-  const [currentDevice] = useState(() => getCurrentDevice())
+  const currentDevice = getCurrentDevice()
 
-  // Генерируем устройства на основе лимита из подписки
-  const [devices, setDevices] = useState<Device[]>(() => generateDevices(sub.devices || 5, currentDevice))
+  // Загружаем устройства и добавляем текущее если нужно
+  const [devices, setDevices] = useState<Device[]>(() => {
+    const stored = getStoredDevices()
+    const exists = stored.some(d => d.name === currentDevice.name && d.type === currentDevice.type)
 
-  // Обновляем устройства когда меняется лимит
-  useEffect(() => {
-    setDevices(generateDevices(sub.devices || 5, currentDevice))
-  }, [sub.devices, currentDevice])
+    if (!exists) {
+      const newDevice: Device = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: currentDevice.name,
+        type: currentDevice.type,
+        connected: true,
+        lastSeen: 'Сейчас',
+        isCurrent: true,
+      }
+      const updated = [newDevice, ...stored]
+      setStoredDevices(updated)
+      return updated
+    }
+
+    // Обновляем текущее устройство в списке
+    const updated = stored.map(d => ({
+      ...d,
+      isCurrent: d.name === currentDevice.name && d.type === currentDevice.type,
+      lastSeen: d.name === currentDevice.name && d.type === currentDevice.type ? 'Сейчас' : d.lastSeen,
+    }))
+    return updated
+  })
 
   const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
   const userName = tgUser?.first_name || 'Максим'
@@ -401,12 +415,13 @@ export default function HomeScreen() {
     ? sub.expiresAt.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: '2-digit' })
     : '—'
 
-  // Реальный счётчик подключённых устройств
   const connectedCount = devices.filter(d => d.connected).length
   const limit = sub.devices || 5
 
   function removeDevice(id: string) {
-    setDevices(prev => prev.filter(d => d.id !== id))
+    const updated = devices.filter(d => d.id !== id)
+    setDevices(updated)
+    setStoredDevices(updated)
   }
 
   return (
@@ -463,11 +478,19 @@ export default function HomeScreen() {
           </div>
 
           {/* Device list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {devices.map(device => (
-              <DeviceRow key={device.id} device={device} onRemove={removeDevice} lang={lang} />
-            ))}
-          </div>
+          {devices.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {devices.map(device => (
+                <DeviceRow key={device.id} device={device} onRemove={removeDevice} lang={lang} />
+              ))}
+            </div>
+          ) : (
+            <div style={glass({ padding: '20px', textAlign: 'center' })}>
+              <p style={{ fontSize: 12, color: MUTED, fontFamily: 'monospace' }}>
+                {lang === 'ru' ? 'Нет сохранённых устройств' : 'No saved devices'}
+              </p>
+            </div>
+          )}
 
           {/* Add device button */}
           <button
