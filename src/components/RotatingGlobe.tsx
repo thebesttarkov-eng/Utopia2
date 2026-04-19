@@ -6,15 +6,6 @@ import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { FeatureCollection, Feature } from 'geojson'
 import { useSub } from '../context/SubContext'
 
-// 50 популярных стран (ISO alpha-2)
-const AVAILABLE_COUNTRIES = [
-  'US', 'GB', 'DE', 'FR', 'NL', 'JP', 'AU', 'CA', 'IT', 'ES',
-  'SE', 'NO', 'DK', 'FI', 'CH', 'AT', 'BE', 'PL', 'CZ', 'PT',
-  'IE', 'NZ', 'SG', 'HK', 'KR', 'TW', 'IN', 'BR', 'MX', 'AR',
-  'CL', 'CO', 'PE', 'ZA', 'EG', 'IL', 'AE', 'SA', 'TR', 'GR',
-  'RO', 'BG', 'HU', 'HR', 'RS', 'UA', 'BY', 'LT', 'LV', 'EE'
-]
-
 export function RotatingGlobe() {
   const svgRef = useRef<SVGSVGElement>(null)
   const rotationRef = useRef(0)
@@ -99,15 +90,8 @@ export function RotatingGlobe() {
           .attr('class', 'country')
           .attr('fill', 'none')
           .attr('stroke', (d: any) => {
-            const props = d.properties as { iso_a2?: string } | null
-            const iso = props?.iso_a2
-
             // Active country = white
             if (d.id === activeCountryId) return '#FFFFFF'
-
-            // Available countries = purple
-            if (iso && AVAILABLE_COUNTRIES.includes(iso)) return '#9333EA'
-
             // Others = gray
             return '#cccccc'
           })
