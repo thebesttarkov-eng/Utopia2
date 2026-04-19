@@ -15,4 +15,20 @@ export default defineConfig({
     }),
   ],
   base: './',
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('/react-router') || id.includes('/react-dom') || /\/react\//.test(id)) return 'react-vendor'
+          if (id.includes('/d3') || id.includes('/topojson')) return 'd3-vendor'
+          if (id.includes('/lucide-react')) return 'icons'
+        },
+      },
+    },
+  },
 })

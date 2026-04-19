@@ -8,7 +8,19 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
-      "Bash(vercel *)"
+      "Bash(vercel *)",
+      "Bash(tasklist)",
+      "Bash(\"/c/Users/maksi/.lmstudio/bin/lms.exe\" server *)",
+      "Bash(\"/c/Users/maksi/.lmstudio/bin/lms.exe\" ls *)",
+      "Bash(curl -s -X POST http://localhost:1234/v1/chat/completions -H \"Content-Type: application/json\" -d '{\"model\":\"qwen/qwen3.6-35b-a3b\",\"messages\":[{\"role\":\"user\",\"content\":\"Say hello in 3 words\"}],\"max_tokens\":500}')",
+      "Bash(npx -y --prefer-offline @wonderwhy-er/desktop-commander --help)",
+      "Bash(where uvx.exe)",
+      "Bash(\"/c/Users/maksi/AppData/Local/Microsoft/WinGet/Packages/astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe/uvx.exe\" --help)",
+      "Bash(\"/c/Users/maksi/AppData/Local/Microsoft/WinGet/Packages/astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe/uvx.exe\" --help-command mcp-server-fetch)",
+      "Bash(\"/c/Users/maksi/AppData/Local/Microsoft/WinGet/Packages/astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe/uvx.exe\" --from mcp-server-fetch python -c \"print\\('fetch ok'\\)\")",
+      "Bash(\"/c/Users/maksi/AppData/Local/Microsoft/WinGet/Packages/astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe/uvx.exe\" --from duckduckgo-mcp-server python -c \"print\\('ddg ok'\\)\")",
+      "Bash(curl -s --max-time 5 https://example.com -o /dev/null -w \"HTTP %{http_code} %{time_total}s\\\\n\")",
+      "Bash(\"/c/Users/maksi/AppData/Local/Microsoft/WinGet/Packages/astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe/uvx.exe\" --from mcp-server-fetch python -c \"import httpx; print\\(httpx.get\\('https://example.com', timeout=5\\).status_code\\)\")"
     ],
     "defaultMode": "dontAsk"
   }
