@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo'
 import { select } from 'd3-selection'
 import { feature } from 'topojson-client'
@@ -6,7 +6,7 @@ import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { FeatureCollection, Feature } from 'geojson'
 import { useSub } from '../context/SubContext'
 
-// 50 популярных стран (ISO alpha-2)
+// 50 популярных стран
 const ALL_COUNTRIES = [
   'US', 'GB', 'DE', 'FR', 'NL', 'JP', 'AU', 'CA', 'IT', 'ES',
   'SE', 'NO', 'DK', 'FI', 'CH', 'AT', 'BE', 'PL', 'CZ', 'PT',
@@ -15,11 +15,9 @@ const ALL_COUNTRIES = [
   'RO', 'BG', 'HU', 'HR', 'RS', 'UA', 'BY', 'LT', 'LV', 'EE'
 ]
 
-// Выбираем 10 случайных стран для подсветки
-function getRandomCountries(count: number = 10): string[] {
-  const shuffled = [...ALL_COUNTRIES].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
-}
+const PURPLE = '#9333EA'
+const WHITE = '#FFFFFF'
+const GRAY = '#666666'
 
 export function RotatingGlobe() {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -28,33 +26,41 @@ export function RotatingGlobe() {
   const mountedRef = useRef(true)
   const { active, location } = useSub()
 
-  // Случайные страны для подсветки
-  const [glowingCountries] = useState(() => getRandomCountries(10))
+  // 10 случайных стран для подсветки (фиксированные)
+  const glowingCountries = useMemo(() => {
+    const shuffled = [...ALL_COUNTRIES].sort(() => 0.5 - Math.random())
+    return new Set(shuffled.slice(0, 10))
+  }, [])
 
   const width = 300
   const height = 300
 
   useEffect(() => {
+    let isCancelled = false
+
     const loadAndRender = async () => {
-      if (!svgRef.current) return
+      if (!svgRef.current || isCancelled) return
 
       try {
-        const CACHE_KEY = 'utopia:world-atlas-110m:v3'
+        const CACHE_KEY = 'utopia:world-atlas-110m:v4'
         let world: Topology
-        const cached = typeof localStorage !== 'undefined' ? localStorage.getItem(CACHE_KEY) : null
 
-        if (cached) {
-          world = JSON.parse(cached) as Topology
-        } else {
-          if (!navigator.onLine) {
-            renderOfflineFallback()
-            return
+        if (typeof localStorage !== 'undefined') {
+          const cached = localStorage.getItem(CACHE_KEY)
+          if (cached) {
+            world = JSON.parse(cached)
+          } else {
+            if (!navigator.onLine) return
+            const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+            const text = await response.text()
+            world = JSON.parse(text)
+            try { localStorage.setItem(CACHE_KEY, text) } catch { /* ignore */ }
           }
-          const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-          const text = await response.text()
-          world = JSON.parse(text) as Topology
-          try { localStorage.setItem(CACHE_KEY, text) } catch { /* quota */ }
+        } else {
+          return
         }
+
+        if (isCancelled || !svgRef.current) return
 
         const countries = feature(world, world.objects.countries as GeometryCollection) as FeatureCollection
 
@@ -69,7 +75,7 @@ export function RotatingGlobe() {
         const path = geoPath(projection)
         const graticule = geoGraticule()
 
-        // Find active country
+        // Найти активную страну
         let activeCountryId: string | number | null = null
         if (active && location?.countryCode) {
           const found = countries.features.find((f: Feature) => {
@@ -79,121 +85,91 @@ export function RotatingGlobe() {
           activeCountryId = found?.id ?? null
         }
 
-        // Создаём SVG группу для анимации
-        const defs = svg.append('defs')
-
-        // Glow filter для фиолетовых стран
-        const filter = defs.append('filter')
-          .attr('id', 'purple-glow')
-          .attr('x', '-50%')
-          .attr('y', '-50%')
-          .attr('width', '200%')
-          .attr('height', '200%')
-
-        filter.append('feGaussianBlur')
-          .attr('in', 'SourceGraphic')
-          .attr('stdDeviation', '3')
-          .attr('result', 'blur')
-
-        filter.append('feMerge')
-          .selectAll('feMergeNode')
-          .data(['blur', 'SourceGraphic'])
-          .enter()
-          .append('feMergeNode')
-          .attr('in', d => d)
-
-        const sphereGroup = svg.append('g').attr('class', 'sphere-group')
-        const graticuleGroup = svg.append('g').attr('class', 'graticule-group')
-        const countriesGroup = svg.append('g').attr('class', 'countries-group')
-        const glowGroup = svg.append('g').attr('class', 'glow-group')
-
-        // Add sphere
-        sphereGroup.append('path')
+        // Все страны
+        const sphere = svg.append('path')
           .datum({ type: 'Sphere' })
           .attr('fill', 'none')
           .attr('stroke', '#222222')
           .attr('stroke-width', 1)
 
-        // Add graticule
-        graticuleGroup.append('path')
+        const grid = svg.append('path')
           .datum(graticule())
           .attr('fill', 'none')
-          .attr('stroke', '#cccccc')
-          .attr('stroke-width', 1)
-          .attr('opacity', 0.15)
+          .attr('stroke', '#444444')
+          .attr('stroke-width', 0.5)
+          .attr('opacity', 0.3)
 
-        // Non-glowing countries (plain gray)
-        countriesGroup.selectAll('.country-base')
-          .data(countries.features.filter(f => {
-            const props = f.properties as { iso_a2?: string } | null
-            const iso = props?.iso_a2
-            // Исключаем активную страну и страны для подсветки
-            return f.id !== activeCountryId && !(iso && glowingCountries.includes(iso))
-          }))
+        // Отрисовка стран
+        svg.selectAll('.country')
+          .data(countries.features)
           .enter()
           .append('path')
-          .attr('class', 'country-base')
-          .attr('fill', 'none')
-          .attr('stroke', '#888888')
-          .attr('stroke-width', 0.8)
-          .attr('opacity', 0.6)
-
-        // Glowing countries (purple with pulse)
-        glowGroup.selectAll('.country-glow')
-          .data(countries.features.filter(f => {
-            const props = f.properties as { iso_a2?: string } | null
+          .attr('class', 'country')
+          .attr('stroke-linejoin', 'round')
+          .on('mouseover', function() {
+            select(this).attr('stroke-width', 2)
+          })
+          .on('mouseout', function(_, d: any) {
+            const props = d.properties as { iso_a2?: string } | null
             const iso = props?.iso_a2
-            return f.id !== activeCountryId && iso && glowingCountries.includes(iso)
-          }))
-          .enter()
-          .append('path')
-          .attr('class', 'country-glow')
-          .attr('fill', 'none')
-          .attr('stroke', '#9333EA')
-          .attr('stroke-width', 1.5)
-          .attr('filter', 'url(#purple-glow)')
-          .attr('opacity', 0.9)
 
-        // Active country (white, glowing)
-        if (activeCountryId) {
-          const activeCountry = countries.features.find(f => f.id === activeCountryId)
-          if (activeCountry) {
-            glowGroup.append('path')
-              .datum(activeCountry)
-              .attr('class', 'country-active')
-              .attr('fill', 'none')
-              .attr('stroke', '#FFFFFF')
-              .attr('stroke-width', 2)
-              .attr('filter', 'url(#purple-glow)')
-              .attr('opacity', 1)
-          }
-        }
+            if (d.id === activeCountryId) {
+              select(this).attr('stroke-width', 2.5)
+            } else if (iso && glowingCountries.has(iso)) {
+              select(this).attr('stroke-width', 2)
+            } else {
+              select(this).attr('stroke-width', 0.8)
+            }
+          })
 
         const animate = () => {
-          if (!mountedRef.current) return
+          if (!mountedRef.current || isCancelled) return
 
-          // Медленное вращение
-          rotationRef.current += 0.15
-          projection.rotate([rotationRef.current, -10, 0])
+          rotationRef.current += 0.2
+          projection.rotate([rotationRef.current, -15, 0])
 
-          // Обновляем пути
-          sphereGroup.select('path').attr('d', path as any)
-          graticuleGroup.select('path').attr('d', path as any)
-          countriesGroup.selectAll('.country-base').attr('d', path as any)
-          glowGroup.selectAll('.country-glow').attr('d', path as any)
-          glowGroup.select('.country-active')?.attr('d', path as any)
+          sphere.attr('d', path as any)
+          grid.attr('d', path as any)
 
-          // Пульсация opacity для эффекта свечения
-          const pulse = 0.6 + Math.sin(Date.now() / 500) * 0.4
-          glowGroup.selectAll('.country-glow').attr('opacity', pulse)
-          glowGroup.select('.country-active')?.attr('opacity', pulse)
+          // Обновляем страны
+          svg.selectAll('.country')
+            .attr('d', path as any)
+            .attr('stroke', (d: any) => {
+              const props = d.properties as { iso_a2?: string } | null
+              const iso = props?.iso_a2
+
+              if (d.id === activeCountryId) return WHITE
+              if (iso && glowingCountries.has(iso)) return PURPLE
+              return GRAY
+            })
+            .attr('stroke-width', (d: any) => {
+              if (d.id === activeCountryId) return 2.5
+              const props = d.properties as { iso_a2?: string } | null
+              if (props?.iso_a2 && glowingCountries.has(props.iso_a2)) return 1.5
+              return 0.8
+            })
+            .attr('opacity', (d: any) => {
+              if (d.id === activeCountryId) return 1
+              const props = d.properties as { iso_a2?: string } | null
+              if (props?.iso_a2 && glowingCountries.has(props.iso_a2)) return 1
+              return 0.5
+            })
+
+          // Пульсация для фиолетовых
+          const pulse = 0.7 + Math.sin(Date.now() / 400) * 0.3
+          svg.selectAll('.country').each(function(d: any) {
+            const props = d.properties as { iso_a2?: string } | null
+            if (props?.iso_a2 && glowingCountries.has(props.iso_a2)) {
+              select(this).attr('opacity', pulse)
+            }
+          })
 
           animationRef.current = requestAnimationFrame(animate)
         }
 
         animate()
       } catch (error) {
-        console.error('[globe] Failed to load:', error)
+        console.error('[globe] Error:', error)
       }
     }
 
@@ -201,39 +177,12 @@ export function RotatingGlobe() {
 
     return () => {
       mountedRef.current = false
+      isCancelled = true
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
-      if (svgRef.current) {
-        select(svgRef.current).selectAll('*').remove()
-      }
     }
   }, [active, location, glowingCountries])
-
-  function renderOfflineFallback() {
-    if (!svgRef.current) return
-    const svg = select(svgRef.current)
-    svg.selectAll('*').remove()
-
-    svg.append('circle')
-      .attr('cx', width / 2)
-      .attr('cy', height / 2)
-      .attr('r', 100)
-      .attr('fill', 'none')
-      .attr('stroke', '#2A2A2A')
-      .attr('stroke-width', 2)
-
-    svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', height / 2)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', '#808080')
-      .attr('font-family', 'monospace')
-      .attr('font-size', 12)
-      .attr('letter-spacing', 1)
-      .text('OFFLINE')
-  }
 
   return (
     <div style={{
@@ -250,10 +199,7 @@ export function RotatingGlobe() {
       <svg
         ref={svgRef}
         viewBox={`0 0 ${width} ${height}`}
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
+        style={{ width: '100%', height: '100%' }}
         preserveAspectRatio="xMidYMid meet"
       />
     </div>
