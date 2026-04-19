@@ -6,15 +6,6 @@ import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { FeatureCollection, Feature } from 'geojson'
 import { useSub } from '../context/SubContext'
 
-// 50 популярных стран (ISO alpha-2)
-const AVAILABLE_COUNTRIES = [
-  'US', 'GB', 'DE', 'FR', 'NL', 'JP', 'AU', 'CA', 'IT', 'ES',
-  'SE', 'NO', 'DK', 'FI', 'CH', 'AT', 'BE', 'PL', 'CZ', 'PT',
-  'IE', 'NZ', 'SG', 'HK', 'KR', 'TW', 'IN', 'BR', 'MX', 'AR',
-  'CL', 'CO', 'PE', 'ZA', 'EG', 'IL', 'AE', 'SA', 'TR', 'GR',
-  'RO', 'BG', 'HU', 'HR', 'RS', 'UA', 'BY', 'LT', 'LV', 'EE'
-]
-
 export function RotatingGlobe() {
   const svgRef = useRef<SVGSVGElement>(null)
   const rotationRef = useRef(0)
@@ -82,45 +73,33 @@ export function RotatingGlobe() {
         const graticuleGroup = svg.append('g').attr('class', 'graticule-group')
         const countriesGroup = svg.append('g').attr('class', 'countries-group')
 
-        // Add sphere
+        // Add sphere (ocean fill)
         sphereGroup.append('path')
           .datum({ type: 'Sphere' })
           .attr('class', 'sphere')
-          .attr('fill', 'none')
-          .attr('stroke', '#222222')
-          .attr('stroke-width', 1)
+          .attr('fill', '#1A1A1A')
+          .attr('stroke', '#3A3A3A')
+          .attr('stroke-width', 1.5)
 
         // Add graticule
         graticuleGroup.append('path')
           .datum(graticule())
           .attr('class', 'graticule')
           .attr('fill', 'none')
-          .attr('stroke', '#cccccc')
-          .attr('stroke-width', 1)
-          .attr('opacity', 0.2)
+          .attr('stroke', '#2A2A2A')
+          .attr('stroke-width', 0.5)
+          .attr('opacity', 0.5)
 
-        // Add countries
+        // Add countries (filled continents with white outlines)
         countriesGroup.selectAll('.country')
           .data(countries.features)
           .enter()
           .append('path')
           .attr('class', 'country')
-          .attr('fill', 'none')
-          .attr('stroke', (d: any) => {
-            const props = d.properties as { iso_a2?: string } | null
-            const iso = props?.iso_a2
-
-            // Active country = white
-            if (d.id === activeCountryId) return '#FFFFFF'
-
-            // Available countries = purple
-            if (iso && AVAILABLE_COUNTRIES.includes(iso)) return '#9333EA'
-
-            // Others = gray
-            return '#cccccc'
-          })
-          .attr('stroke-width', (d: any) => d.id === activeCountryId ? 2 : 1)
-          .attr('opacity', 1)
+          .attr('fill', (d: any) => d.id === activeCountryId ? '#3A3A3A' : '#2A2A2A')
+          .attr('stroke', '#FFFFFF')
+          .attr('stroke-width', (d: any) => d.id === activeCountryId ? 1 : 0.5)
+          .attr('opacity', 0.9)
 
         const animate = () => {
           if (!mountedRef.current) return
