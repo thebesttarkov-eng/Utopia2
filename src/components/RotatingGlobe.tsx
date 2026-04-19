@@ -15,9 +15,10 @@ const ALL_COUNTRIES = [
   'RO', 'BG', 'HU', 'HR', 'RS', 'UA', 'BY', 'LT', 'LV', 'EE'
 ]
 
-const PURPLE = '#9333EA'
+const PURPLE = '#A855F7' // Ярче фиолетовый
 const WHITE = '#FFFFFF'
-const GRAY = '#666666'
+const GRAY = '#444444'
+const PURPLE_FILL = 'rgba(168, 85, 247, 0.15)' // Полупрозрачный для fill
 
 export function RotatingGlobe() {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -105,6 +106,13 @@ export function RotatingGlobe() {
           .enter()
           .append('path')
           .attr('class', 'country')
+          .attr('fill', (d: any) => {
+            const props = d.properties as { iso_a2?: string } | null
+            const iso = props?.iso_a2
+            if (d.id === activeCountryId) return 'rgba(255,255,255,0.2)'
+            if (iso && glowingCountries.has(iso)) return PURPLE_FILL
+            return 'rgba(100,100,100,0.1)'
+          })
           .attr('stroke-linejoin', 'round')
           .on('mouseover', function() {
             select(this).attr('stroke-width', 2)
