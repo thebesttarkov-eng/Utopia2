@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react'
-import { useState, memo, useEffect, useRef } from 'react'
+import { useState, memo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Zap, Globe, Smartphone, Copy, Check, ExternalLink,
-  Gift, Shield, Download, Settings2, Plus, Trash2, Laptop,
+  Copy, Check, ExternalLink, Gift, Shield, Download, Settings2,
+  Plus, Trash2, Laptop, Smartphone, Monitor,
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
 import { useSub } from '../context/SubContext'
@@ -29,11 +29,25 @@ interface Device {
   lastSeen: string
 }
 
-const MOCK_DEVICES: Device[] = [
-  { id: '1', name: 'iPhone 15 Pro Max', type: 'iphone', connected: true, lastSeen: 'Сейчас' },
-  { id: '2', name: 'MacBook Pro 16"', type: 'mac', connected: true, lastSeen: 'Сейчас' },
-  { id: '3', name: 'Samsung Galaxy S24', type: 'android', connected: false, lastSeen: '2 ч назад' },
-]
+// Генерируем устройства на основе лимита из подписки
+function generateDevices(limit: number): Device[] {
+  const templates = [
+    { name: 'iPhone 15 Pro Max', type: 'iphone' as const },
+    { name: 'MacBook Pro 16"', type: 'mac' as const },
+    { name: 'Samsung Galaxy S24', type: 'android' as const },
+    { name: 'Windows PC', type: 'windows' as const },
+    { name: 'Linux Server', type: 'linux' as const },
+  ]
+  const lastSeens = ['Сейчас', '5 мин назад', '1 ч назад', '2 ч назад', 'Вчера']
+
+  return templates.slice(0, Math.min(limit, templates.length)).map((t, i) => ({
+    id: String(i + 1),
+    name: t.name,
+    type: t.type,
+    connected: i < Math.min(limit - 1, 2), // первые 2 подключены
+    lastSeen: lastSeens[i % lastSeens.length],
+  }))
+}
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
   background: 'rgba(26, 26, 26, 0.85)',
@@ -45,89 +59,23 @@ const glass = (extra?: CSSProperties): CSSProperties => ({
   ...extra,
 })
 
-// ── Glitch key text ────────────────────────────────────────
-const CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-
-const GlitchKey = memo(function GlitchKey({ text, revealed }: { text: string; revealed: boolean }) {
-  const [displayed, setDisplayed] = useState('')
-  const [glitching, setGlitching] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => { setMounted(true) }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-    if (revealed) {
-      setDisplayed(text)
-      setGlitching(false)
-      return
-    }
-
-    // Собираем ключ посимвольно с глитчем
-    let idx = 0
-    const interval = setInterval(() => {
-      if (idx >= text.length) {
-        clearInterval(interval)
-        setGlitching(false)
-        return
-      }
-      setGlitching(true)
-      // Показываем случайные символы до текущей позиции
-      let partial = ''
-      for (let i = 0; i < text.length; i++) {
-        if (i < idx) {
-          partial += text[i]
-        } else if (i === idx) {
-          // Глитч символ
-          partial += CHARS[Math.floor(Math.random() * CHARS.length)]
-        } else {
-          // Непоказанная часть — случайные символы
-          partial += CHARS[Math.floor(Math.random() * CHARS.length)]
-        }
-      }
-      setDisplayed(partial)
-      idx++
-    }, 40)
-
-    return () => {
-      clearInterval(interval)
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [revealed, text, mounted])
-
-  return (
-    <div style={{
-      background: '#000000',
-      border: `1px solid ${glitching ? 'rgba(255,255,255,0.3)' : '#2A2A2A'}`,
-      borderRadius: 8, padding: '9px 11px',
-      fontSize: 10.5, color: glitching ? 'rgba(255,255,255,0.7)' : '#808080',
-      fontFamily: 'monospace', wordBreak: 'break-all',
-      lineHeight: 1.5, letterSpacing: 0.2,
-      maxHeight: 66, overflow: 'hidden',
-      position: 'relative',
-      animation: glitching ? 'titan-glitch 0.1s ease infinite' : 'none',
-    }}>
-      {displayed || '•' + '•'.repeat(40)}
-    </div>
-  )
-})
-
-// ── Device row ──────────────────────────────────────────────
-const DeviceIcon = ({ type }: { type: Device['type'] }) => {
+// ── Device icon ────────────────────────────────────────────
+function DeviceIcon({ type, connected }: { type: Device['type']; connected: boolean }) {
   const size = 14
+  const color = connected ? G : MUTED
   switch (type) {
-    case 'iphone': return <Smartphone size={size} color={G} />
-    case 'android': return <Smartphone size={size} color={TEXT2} />
-    case 'mac': return <Laptop size={size} color={G} />
-    case 'windows': return <Laptop size={size} color={TEXT2} />
-    case 'linux': return <Laptop size={size} color={MUTED} />
-    default: return <Laptop size={size} color={MUTED} />
+    case 'iphone': return <Smartphone size={size} color={color} />
+    case 'android': return <Smartphone size={size} color={color} />
+    case 'mac': return <Laptop size={size} color={color} />
+    case 'windows': return <Monitor size={size} color={color} />
+    case 'linux': return <Laptop size={size} color={color} />
+    default: return <Monitor size={size} color={color} />
   }
 }
 
-const DeviceRow = memo(function DeviceRow({ device, onRemove }: {
-  device: Device; onRemove: (id: string) => void
+// ── Device row ─────────────────────────────────────────────
+const DeviceRow = memo(function DeviceRow({ device, onRemove, lang }: {
+  device: Device; onRemove: (id: string) => void; lang: 'ru' | 'en'
 }) {
   return (
     <div style={{
@@ -144,7 +92,7 @@ const DeviceRow = memo(function DeviceRow({ device, onRemove }: {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <DeviceIcon type={device.type} />
+        <DeviceIcon type={device.type} connected={device.connected} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 12, fontWeight: 600, color: TEXT, fontFamily: 'monospace', marginBottom: 2 }}>
@@ -154,7 +102,14 @@ const DeviceRow = memo(function DeviceRow({ device, onRemove }: {
           {device.lastSeen}
         </p>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          fontSize: 10, fontFamily: 'monospace',
+          color: device.connected ? G : MUTED,
+          fontWeight: device.connected ? 700 : 500,
+        }}>
+          {device.connected ? (lang === 'ru' ? 'online' : 'online') : (lang === 'ru' ? 'offline' : 'offline')}
+        </span>
         <span style={{
           width: 6, height: 6, borderRadius: '50%',
           background: device.connected ? G : MUTED,
@@ -180,8 +135,16 @@ const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: {
   onBuy: () => void; onTrial: () => void; lang: 'ru' | 'en'
 }) {
   const benefits = lang === 'ru'
-    ? [{ icon: Zap, t: '1 Гбит/с' }, { icon: Globe, t: '5 стран' }, { icon: Smartphone, t: 'Happ' }]
-    : [{ icon: Zap, t: '1 Gbps' },   { icon: Globe, t: '5 countries' }, { icon: Smartphone, t: 'Happ' }]
+    ? [
+        { icon: '⚡', t: '1 Гбит/с' },
+        { icon: '🌍', t: '5 стран' },
+        { icon: '📱', t: 'Happ' },
+      ]
+    : [
+        { icon: '⚡', t: '1 Gbps' },
+        { icon: '🌍', t: '5 countries' },
+        { icon: '📱', t: 'Happ' },
+      ]
 
   return (
     <div style={glass({ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 14 })}>
@@ -206,13 +169,13 @@ const InactiveHero = memo(function InactiveHero({ onBuy, onTrial, lang }: {
       </div>
 
       <div style={{ display: 'flex', gap: 6 }}>
-        {benefits.map(({ icon: Icon, t }, i) => (
+        {benefits.map(({ icon, t }, i) => (
           <div key={i} style={{
             flex: 1, display: 'flex', alignItems: 'center', gap: 6,
             background: '#2A2A2A', border: '1px solid #3A3A3A',
             borderRadius: 8, padding: '7px 8px',
           }}>
-            <Icon size={12} color="#FFFFFF" />
+            <span style={{ fontSize: 12 }}>{icon}</span>
             <span style={{ fontSize: 10, color: TEXT, fontFamily: 'monospace', fontWeight: 600 }}>{t}</span>
           </div>
         ))}
@@ -273,6 +236,7 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: {
     window.location.href = `happ://add/${encoded}`
   }
 
+  const masked = revealed ? MOCK_KEY : MOCK_KEY.slice(0, 20) + '••••••••••••••' + MOCK_KEY.slice(-10)
   const lowDays = daysLeft <= 7
 
   return (
@@ -299,7 +263,7 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: {
         </div>
       </div>
 
-      {/* key block with glitch */}
+      {/* key block */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.2, fontWeight: 700 }}>
@@ -312,7 +276,18 @@ const ActiveHero = memo(function ActiveHero({ lang, expiresStr, daysLeft }: {
             {revealed ? (lang === 'ru' ? 'СКРЫТЬ' : 'HIDE') : (lang === 'ru' ? 'ПОКАЗАТЬ' : 'REVEAL')}
           </button>
         </div>
-        <GlitchKey text={MOCK_KEY} revealed={revealed} />
+
+        <div style={{
+          background: '#000000',
+          border: '1px solid #2A2A2A',
+          borderRadius: 8, padding: '9px 11px',
+          fontSize: 10.5, color: '#808080',
+          fontFamily: 'monospace', wordBreak: 'break-all',
+          lineHeight: 1.5, letterSpacing: 0.2,
+          maxHeight: 66, overflow: 'hidden',
+        }}>
+          {masked}
+        </div>
       </div>
 
       {/* actions row */}
@@ -356,7 +331,14 @@ export default function HomeScreen() {
   const { lang } = useLang()
   const navigate = useNavigate()
   const sub = useSub()
-  const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES)
+
+  // Устройства генерируются на основе лимита из подписки
+  const [devices, setDevices] = useState<Device[]>(() => generateDevices(sub.devices || 5))
+
+  // Обновляем устройства когда меняется лимит
+  useEffect(() => {
+    setDevices(generateDevices(sub.devices || 5))
+  }, [sub.devices])
 
   const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
   const userName = tgUser?.first_name || 'Максим'
@@ -365,8 +347,9 @@ export default function HomeScreen() {
     ? sub.expiresAt.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: '2-digit' })
     : '—'
 
+  // Реальный счётчик подключённых устройств
   const connectedCount = devices.filter(d => d.connected).length
-  const limit = 5 // из подписки
+  const limit = sub.devices || 5
 
   function removeDevice(id: string) {
     setDevices(prev => prev.filter(d => d.id !== id))
@@ -410,7 +393,7 @@ export default function HomeScreen() {
       {/* Devices panel — только когда активна */}
       {sub.active && (
         <>
-          {/* Header + Add button */}
+          {/* Header + counter */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
               // {lang === 'ru' ? 'УСТРОЙСТВА' : 'DEVICES'}
@@ -421,14 +404,14 @@ export default function HomeScreen() {
               borderRadius: 20, padding: '3px 10px',
               fontSize: 10, color: TEXT, fontFamily: 'monospace', fontWeight: 600,
             }}>
-              {connectedCount}/{limit}
+              {connectedCount}/{limit} {lang === 'ru' ? 'онлайн' : 'online'}
             </span>
           </div>
 
           {/* Device list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {devices.map(device => (
-              <DeviceRow key={device.id} device={device} onRemove={removeDevice} />
+              <DeviceRow key={device.id} device={device} onRemove={removeDevice} lang={lang} />
             ))}
           </div>
 
