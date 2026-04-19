@@ -27,25 +27,56 @@ interface Device {
   type: 'iphone' | 'android' | 'windows' | 'mac' | 'linux'
   connected: boolean
   lastSeen: string
+  isCurrent: boolean
 }
 
-// Генерируем устройства на основе лимита из подписки
-function generateDevices(limit: number): Device[] {
-  const templates = [
-    { name: 'iPhone 15 Pro Max', type: 'iphone' as const },
-    { name: 'MacBook Pro 16"', type: 'mac' as const },
-    { name: 'Samsung Galaxy S24', type: 'android' as const },
-    { name: 'Windows PC', type: 'windows' as const },
-    { name: 'Linux Server', type: 'linux' as const },
+// ── Определение текущего устройства из Telegram WebApp ────
+function getCurrentDevice(): { name: string; type: Device['type'] } {
+  // Telegram WebApp предоставляет информацию о платформе
+  const tg = (window as any).Telegram?.WebApp
+  const platform = tg?.platform || 'unknown'
+
+  // Определяем по UserAgent
+  const ua = navigator.userAgent.toLowerCase()
+
+  if (platform === 'ios' || ua.includes('iphone') || ua.includes('ipad')) {
+    return { name: 'iPhone', type: 'iphone' }
+  }
+  if (platform === 'android' || ua.includes('android')) {
+    return { name: 'Android', type: 'android' }
+  }
+  if (ua.includes('mac os') || ua.includes('macintosh')) {
+    return { name: 'Mac', type: 'mac' }
+  }
+  if (ua.includes('windows')) {
+    return { name: 'Windows PC', type: 'windows' }
+  }
+  if (ua.includes('linux')) {
+    return { name: 'Linux', type: 'linux' }
+  }
+
+  return { name: 'Устройство', type: 'windows' }
+}
+
+// Генерируем устройства с текущим device первым
+function generateDevices(limit: number, currentDevice: { name: string; type: Device['type'] }): Device[] {
+  const templates: { name: string; type: Device['type'] }[] = [
+    currentDevice, // Текущее устройство первое
+    { name: 'Windows PC', type: 'windows' },
+    { name: 'MacBook Pro', type: 'mac' },
+    { name: 'Android', type: 'android' },
+    { name: 'iPad Pro', type: 'iphone' },
   ]
+
   const lastSeens = ['Сейчас', '5 мин назад', '1 ч назад', '2 ч назад', 'Вчера']
 
   return templates.slice(0, Math.min(limit, templates.length)).map((t, i) => ({
     id: String(i + 1),
     name: t.name,
     type: t.type,
-    connected: i < Math.min(limit - 1, 2), // первые 2 подключены
-    lastSeen: lastSeens[i % lastSeens.length],
+    connected: i === 0, // Только первое (текущее) подключено
+    lastSeen: i === 0 ? 'Сейчас' : lastSeens[i % lastSeens.length],
+    isCurrent: i === 0,
   }))
 }
 
@@ -81,27 +112,45 @@ const DeviceRow = memo(function DeviceRow({ device, onRemove, lang }: {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '10px 12px',
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      background: device.isCurrent
+        ? 'rgba(255,255,255,0.08)'
+        : 'rgba(255,255,255,0.03)',
+      border: device.isCurrent
+        ? '1px solid rgba(255,255,255,0.2)'
+        : '1px solid rgba(255,255,255,0.06)',
       borderRadius: 10,
+      position: 'relative',
     }}>
+      {/* Badge "Это вы" */}
+      {device.isCurrent && (
+        <span style={{
+          position: 'absolute', top: -5, left: 10,
+          background: G, color: '#0E0E0E',
+          fontSize: 7, fontWeight: 800, fontFamily: 'monospace',
+          padding: '1px 5px', borderRadius: 4,
+          letterSpacing: 0.5,
+        }}>ЭТО ВЫ</span>
+      )}
+
       <div style={{
         width: 32, height: 32, borderRadius: 8,
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: device.isCurrent ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)',
+        border: `1px solid ${device.isCurrent ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
         <DeviceIcon type={device.type} connected={device.connected} />
       </div>
+
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: TEXT, fontFamily: 'monospace', marginBottom: 2 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: device.isCurrent ? G : TEXT, fontFamily: 'monospace', marginBottom: 2 }}>
           {device.name}
         </p>
         <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace' }}>
           {device.lastSeen}
         </p>
       </div>
+
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           fontSize: 10, fontFamily: 'monospace',
@@ -115,16 +164,18 @@ const DeviceRow = memo(function DeviceRow({ device, onRemove, lang }: {
           background: device.connected ? G : MUTED,
           boxShadow: device.connected ? '0 0 6px rgba(255,255,255,0.6)' : 'none',
         }}/>
-        <button
-          onClick={() => onRemove(device.id)}
-          style={{
-            background: 'none', border: 'none', padding: 4,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <Trash2 size={12} color={MUTED} />
-        </button>
+        {!device.isCurrent && (
+          <button
+            onClick={() => onRemove(device.id)}
+            style={{
+              background: 'none', border: 'none', padding: 4,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <Trash2 size={12} color={MUTED} />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -332,13 +383,16 @@ export default function HomeScreen() {
   const navigate = useNavigate()
   const sub = useSub()
 
-  // Устройства генерируются на основе лимита из подписки
-  const [devices, setDevices] = useState<Device[]>(() => generateDevices(sub.devices || 5))
+  // Определяем текущее устройство
+  const [currentDevice] = useState(() => getCurrentDevice())
+
+  // Генерируем устройства на основе лимита из подписки
+  const [devices, setDevices] = useState<Device[]>(() => generateDevices(sub.devices || 5, currentDevice))
 
   // Обновляем устройства когда меняется лимит
   useEffect(() => {
-    setDevices(generateDevices(sub.devices || 5))
-  }, [sub.devices])
+    setDevices(generateDevices(sub.devices || 5, currentDevice))
+  }, [sub.devices, currentDevice])
 
   const tgUser = (window as any).Telegram?.WebApp?.initDataUnsafe?.user
   const userName = tgUser?.first_name || 'Максим'
