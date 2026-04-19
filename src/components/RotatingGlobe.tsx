@@ -17,6 +17,7 @@ export function RotatingGlobe() {
   const height = 300
 
   useEffect(() => {
+    mountedRef.current = true
     const loadAndRender = async () => {
       if (!svgRef.current) return
 
