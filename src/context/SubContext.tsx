@@ -74,6 +74,7 @@ export function SubProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSub() {
   const ctx = useContext(SubContext)
   if (!ctx) throw new Error('useSub must be used inside SubProvider')

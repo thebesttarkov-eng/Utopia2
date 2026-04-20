@@ -4,37 +4,61 @@ import { LangProvider } from './i18n/LangContext'
 import { SubProvider } from './context/SubContext'
 import Layout from './components/Layout'
 
-const HomeScreen      = lazy(() => import('./screens/HomeScreen'))
-const InstallScreen   = lazy(() => import('./screens/InstallScreen'))
+const HomeScreen = lazy(() => import('./screens/HomeScreen'))
+const InstallScreen = lazy(() => import('./screens/InstallScreen'))
 const InstallGuideIOS = lazy(() => import('./screens/InstallGuideIOS'))
-const EditorScreen    = lazy(() => import('./screens/EditorScreen'))
-const SubScreen       = lazy(() => import('./screens/SubScreen'))
-const BalanceScreen   = lazy(() => import('./screens/BalanceScreen'))
+const EditorScreen = lazy(() => import('./screens/EditorScreen'))
+const SubScreen = lazy(() => import('./screens/SubScreen'))
+const BalanceScreen = lazy(() => import('./screens/BalanceScreen'))
+const CompatibilityScreen = lazy(() => import('./screens/CompatibilityScreen'))
+const SupportScreen = lazy(() => import('./screens/SupportScreen'))
+const FontsScreen = lazy(() => import('./screens/FontsScreen'))
+const LogoScreen = lazy(() => import('./screens/LogoScreen'))
+const BannersScreen = lazy(() => import('./screens/BannersScreen'))
+const FePage = lazy(() => import('./screens/FePage'))
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { err: Error | null }> {
   state = { err: null as Error | null }
-  static getDerivedStateFromError(err: Error) { return { err } }
+
+  static getDerivedStateFromError(err: Error) {
+    return { err }
+  }
+
   render() {
     if (this.state.err) {
       return (
         <div style={{
-          minHeight: '100vh', background: '#0E0E0E', color: '#FFFFFF',
-          fontFamily: 'monospace', padding: 24, display: 'flex',
-          flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
+          minHeight: '100vh',
+          background: '#0E0E0E',
+          color: '#FFFFFF',
+          fontFamily: 'monospace',
+          padding: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
         }}>
           <p style={{ fontSize: 16, fontWeight: 700 }}>// SYSTEM ERROR</p>
           <p style={{ fontSize: 12, opacity: 0.7, color: '#B0B0B0' }}>{this.state.err.message}</p>
           <button
             onClick={() => location.reload()}
             style={{
-              marginTop: 8, background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF',
-              borderRadius: 8, padding: '8px 16px', fontFamily: 'monospace',
+              marginTop: 8,
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#FFFFFF',
+              borderRadius: 8,
+              padding: '8px 16px',
+              fontFamily: 'monospace',
             }}
-          >RELOAD</button>
+          >
+            RELOAD
+          </button>
         </div>
       )
     }
+
     return this.props.children
   }
 }
@@ -53,8 +77,14 @@ export default function App() {
                   <Route path="install/ios" element={<InstallGuideIOS />} />
                   <Route path="sub" element={<SubScreen />} />
                   <Route path="balance" element={<BalanceScreen />} />
+                  <Route path="compatibility" element={<CompatibilityScreen />} />
+                  <Route path="support" element={<SupportScreen />} />
+                  <Route path="logo" element={<LogoScreen />} />
+                  <Route path="banners" element={<BannersScreen />} />
+                  <Route path="fonts" element={<FontsScreen />} />
                 </Route>
                 <Route path="/editor" element={<EditorScreen />} />
+                <Route path="/fe" element={<FePage />} />
               </Routes>
             </Suspense>
           </BrowserRouter>

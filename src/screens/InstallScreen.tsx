@@ -5,6 +5,8 @@ import {
   Monitor, Apple, Smartphone, Cpu,
 } from 'lucide-react'
 import { useLang } from '../i18n/LangContext'
+import { SymbolReveal } from '../components/SymbolReveal'
+import { getTelegramWebApp } from '../types/telegram'
 
 // ── Palette (в стиле HomeScreen) ──────────────────────────
 const G      = '#FFFFFF'
@@ -12,19 +14,21 @@ const MUTED  = '#808080'
 const TEXT   = '#FFFFFF'
 const TEXT2  = '#B0B0B0'
 const AMBER  = '#D0D0D0'
+const ACCENT = '#FFFFFF'
+const PANEL  = 'rgba(26, 26, 26, 0.50)'
 
 const glass = (extra?: React.CSSProperties): React.CSSProperties => ({
-  background: 'rgba(26, 26, 26, 0.85)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  border: `1px solid rgba(255, 255, 255, 0.08)`,
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-  borderRadius: 12,
+  background: PANEL,
+  backdropFilter: 'blur(28px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+  border: '1px solid rgba(255,255,255,0.13)',
+  boxShadow: '0 18px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)',
+  borderRadius: 14,
   ...extra,
 })
 
 // ── MOCK subscription URL ───────────────────────────────────
-const MOCK_SUB_URL = 'https://utopia-vpn.net/sub/u_a3f2e1c5'
+const MOCK_SUB_URL = 'https://utopiavpn.net/sub/u_a3f2e1c5'
 
 // ── Platforms / clients ────────────────────────────────────
 type ClientId = 'happ' | 'incy' | 'prizrak' | 'fiflashx' | 'koala' | 'v2rayn' |
@@ -53,9 +57,9 @@ const PLATFORMS: Platform[] = [
   { id: 'windows', name: 'Windows', icon: Monitor, clients: [
     { id: 'happ', name: 'Happ', mark: 'H', downloadUrl: 'https://apps.microsoft.com/detail/9PDNL8W6WN26', scheme: 'happ', recommended: true },
     { id: 'incy', name: 'INCY', mark: 'IN', downloadUrl: 'https://github.com/InazumaV/V2bX/releases' },
-    { id: 'prizrak', name: 'Prizrak-Box', mark: '👻', downloadUrl: 'https://github.com/Prizrak-Box/releases' },
+    { id: 'prizrak', name: 'Prizrak-Box', mark: 'P', downloadUrl: 'https://github.com/Prizrak-Box/releases' },
     { id: 'fiflashx', name: 'FlClashX', mark: 'X', downloadUrl: 'https://github.com/chen08209/FlClash/releases' },
-    { id: 'koala', name: 'Koala Clash', mark: '🐨', downloadUrl: 'https://github.com/koalaclash/releases' },
+    { id: 'koala', name: 'Koala Clash', mark: 'K', downloadUrl: 'https://github.com/koalaclash/releases' },
     { id: 'v2rayn', name: 'v2rayN', mark: 'V', downloadUrl: 'https://github.com/2dust/v2rayN/releases/latest' },
   ]},
   { id: 'macos', name: 'macOS', icon: Apple, clients: [
@@ -95,8 +99,8 @@ const ClientTile = memo(function ClientTile({ client, active, onClick }: {
   return (
     <button onClick={onClick} style={{
       ...glass({ padding: '14px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 88 }),
-      border: active ? '1.5px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.08)',
-      background: active ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)',
+      border: active ? '1.5px solid rgba(255,255,255,0.34)' : '1px solid rgba(255,255,255,0.08)',
+      background: active ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
       transition: 'all 0.18s',
       position: 'relative',
       overflow: 'hidden',
@@ -112,8 +116,8 @@ const ClientTile = memo(function ClientTile({ client, active, onClick }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-          background: active ? G : (client.recommended ? AMBER : MUTED),
-          boxShadow: active ? '0 0 6px rgba(255,255,255,0.6)' : 'none',
+          background: active ? ACCENT : (client.recommended ? AMBER : MUTED),
+          boxShadow: 'none',
         }}/>
         <span style={{ fontSize: 12, fontWeight: 700, color: active ? G : TEXT, fontFamily: 'monospace' }}>
           {client.name}
@@ -134,8 +138,8 @@ function StepCard({ index, icon, title, desc, children }: {
     <div style={glass({ padding: '14px 15px', display: 'flex', gap: 12 })}>
       <div style={{
         width: 36, height: 36, flexShrink: 0, borderRadius: 10,
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative',
       }}>
@@ -143,8 +147,8 @@ function StepCard({ index, icon, title, desc, children }: {
         <span style={{
           position: 'absolute', top: -7, left: -7,
           width: 18, height: 18, borderRadius: '50%',
-          background: '#2A2A2A', border: '1px solid rgba(255,255,255,0.2)',
-          fontSize: 10, fontWeight: 800, color: G, fontFamily: 'monospace',
+          background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.18)',
+          fontSize: 10, fontWeight: 800, color: ACCENT, fontFamily: 'monospace',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>{index}</span>
       </div>
@@ -171,13 +175,13 @@ export default function InstallScreen() {
   const [selectedClient, setSelectedClient] = useState<ClientId>('happ')
   
   useEffect(() => {
-    const tg = (window as any).Telegram?.WebApp
-    if (tg?.BackButton) {
-      tg.BackButton.show()
-      const handler = () => navigate(-1)
-      tg.BackButton.onClick(handler)
-      return () => { tg.BackButton!.offClick(handler); tg.BackButton!.hide() }
-    }
+    const tg = getTelegramWebApp()
+    const bb = tg?.BackButton
+    if (!bb) return
+    bb.show()
+    const handler = () => navigate(-1)
+    bb.onClick(handler)
+    return () => { bb.offClick(handler); bb.hide() }
   }, [navigate])
 
   const platform = PLATFORMS.find(p => p.id === platformId)!
@@ -193,7 +197,7 @@ export default function InstallScreen() {
 
   function openAddSubscription() {
     if (client.scheme) {
-      window.location.href = buildImportUrl(client.scheme, MOCK_SUB_URL)
+      window.location.assign(buildImportUrl(client.scheme, MOCK_SUB_URL))
     } else {
       navigator.clipboard.writeText(MOCK_SUB_URL).catch(() => {})
       alert(lang === 'ru'
@@ -210,17 +214,17 @@ export default function InstallScreen() {
       {/* Header (в стиле HomeScreen) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
-            // UTOPIA.INSTALL
+          <p style={{ fontSize: 10, color: ACCENT, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 700 }}>
+            <SymbolReveal text="// UTOPIA.INSTALL" />
           </p>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
             {t('Установка', 'Install')}
           </h1>
         </div>
         <span style={{
-          background: '#2A2A2A', border: '1px solid #3A3A3A',
+          background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)',
           borderRadius: 20, padding: '4px 10px',
-          fontSize: 10, color: TEXT, fontWeight: 600, fontFamily: 'monospace', letterSpacing: 0.5,
+          fontSize: 10, color: ACCENT, fontWeight: 700, fontFamily: 'monospace', letterSpacing: 0.5,
         }}>
           {platform.name.toUpperCase()}
         </span>
@@ -237,15 +241,15 @@ export default function InstallScreen() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '8px 12px',
-                background: active ? 'rgba(255,255,255,0.08)' : 'rgba(26,26,26,0.85)',
-                border: `1px solid ${active ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}`,
+                background: active ? 'rgba(255,255,255,0.08)' : PANEL,
+                border: `1px solid ${active ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.08)'}`,
                 borderRadius: 10,
-                color: active ? G : MUTED,
+                color: active ? ACCENT : MUTED,
                 fontSize: 11, fontWeight: 700, fontFamily: 'monospace',
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <p.icon size={12} color={active ? G : MUTED} />
+              <p.icon size={12} color={active ? ACCENT : MUTED} />
               {p.name}
             </button>
           )
@@ -267,7 +271,7 @@ export default function InstallScreen() {
       {/* Step 1 */}
       <StepCard
         index={1}
-        icon={<Download size={16} color={G} />}
+        icon={<Download size={16} color={ACCENT} />}
         title={t('Установка', 'Install')}
         desc={t('Выберите версию для устройства и установите', 'Pick version for device and install')}
       >
@@ -279,7 +283,7 @@ export default function InstallScreen() {
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '8px 14px',
             background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: 10,
             color: G, fontSize: 11, fontWeight: 700,
             fontFamily: 'monospace', textDecoration: 'none',
@@ -293,7 +297,7 @@ export default function InstallScreen() {
       {/* Step 2 */}
       <StepCard
         index={2}
-        icon={<CloudDownload size={16} color={G} />}
+        icon={<CloudDownload size={16} color={ACCENT} />}
         title={t('Подписка', 'Subscription')}
         desc={t('Нажмите — приложение откроется и подписка добавится', 'Tap — app opens and subscription imports')}
       >
@@ -312,7 +316,7 @@ export default function InstallScreen() {
         </button>
         {!client.scheme && (
           <p style={{ marginTop: 6, fontSize: 10, color: MUTED, fontFamily: 'monospace' }}>
-            ⚠ {client.name} — {t('вставьте ссылку вручную', 'paste link manually')}
+            ! {client.name} — {t('вставьте ссылку вручную', 'paste link manually')}
           </p>
         )}
       </StepCard>
@@ -320,14 +324,14 @@ export default function InstallScreen() {
       {/* Step 3 */}
       <StepCard
         index={3}
-        icon={<CheckCircle2 size={16} color={G} />}
+        icon={<CheckCircle2 size={16} color={ACCENT} />}
         title={t('Подключение', 'Connect')}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 11, color: TEXT2, lineHeight: 1.5 }}>
           <p>{t('Нажмите кнопку включения для подключения', 'Tap connect button to start')}</p>
           <p>
             {t('Discord, Steam → режим ', 'Discord, Steam → ')}
-            <span style={{ color: G, fontFamily: 'monospace', fontWeight: 700 }}>TUN</span>
+            <span style={{ color: ACCENT, fontFamily: 'monospace', fontWeight: 700 }}>TUN</span>
             {t(' — весь трафик', ' — all traffic')}
           </p>
         </div>
@@ -336,4 +340,3 @@ export default function InstallScreen() {
     </div>
   )
 }
-

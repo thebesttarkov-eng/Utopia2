@@ -1,12 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 import viteImagemin from 'vite-plugin-imagemin'
 
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(),
     viteImagemin({
       gifsicle: { optimizationLevel: 7 },
       mozjpeg: { quality: 80 },
@@ -25,7 +23,7 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return
           if (id.includes('/react-router') || id.includes('/react-dom') || /\/react\//.test(id)) return 'react-vendor'
-          if (id.includes('/d3') || id.includes('/topojson')) return 'd3-vendor'
+          if (id.includes('/d3-geo') || id.includes('/topojson')) return 'd3-vendor'
           if (id.includes('/lucide-react')) return 'icons'
         },
       },

@@ -4,21 +4,23 @@ import { useNavigate } from 'react-router-dom'
 import { Zap, Star, Shield, ChevronRight } from 'lucide-react'
 import { useSub, type Plan } from '../context/SubContext'
 import { useLang } from '../i18n/LangContext'
+import { SymbolReveal } from '../components/SymbolReveal'
 
 // ── Palette (в точности как HomeScreen) ───────────────────
-const G     = '#FFFFFF'
 const MUTED = '#808080'
 const TEXT  = '#FFFFFF'
 const TEXT2 = '#B0B0B0'
 const AMBER = '#D0D0D0'
+const ACCENT = '#FFFFFF'
+const PANEL = 'rgba(26, 26, 26, 0.50)'
 
 const glass = (extra?: CSSProperties): CSSProperties => ({
-  background: 'rgba(26, 26, 26, 0.85)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  border: `1px solid rgba(255, 255, 255, 0.08)`,
-  boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-  borderRadius: 12,
+  background: PANEL,
+  backdropFilter: 'blur(28px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+  border: '1px solid rgba(255,255,255,0.13)',
+  boxShadow: '0 18px 52px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)',
+  borderRadius: 14,
   ...extra,
 })
 
@@ -66,19 +68,19 @@ export default function SubScreen() {
       {/* Compact header (в стиле HomeScreen) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <p style={{ fontSize: 10, color: MUTED, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 600 }}>
-            // UTOPIA.PLAN
+          <p style={{ fontSize: 10, color: ACCENT, fontFamily: 'monospace', letterSpacing: 1.5, fontWeight: 700 }}>
+            <SymbolReveal text="// UTOPIA.PLAN" />
           </p>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: TEXT, letterSpacing: -0.2, marginTop: 2 }}>
             {lang === 'ru' ? 'Подписка' : 'Subscription'}
           </h1>
         </div>
         {discount > 0 && (
           <span style={{
-            background: '#2A2A2A',
-            border: `1px solid #3A3A3A`,
+            background: 'rgba(255,255,255,0.08)',
+            border: `1px solid rgba(255,255,255,0.18)`,
             borderRadius: 20, padding: '4px 10px',
-            fontSize: 10, color: TEXT, fontWeight: 600,
+            fontSize: 10, color: AMBER, fontWeight: 700,
             fontFamily: 'monospace', letterSpacing: 0.5,
           }}>
             −{discount}%
@@ -92,12 +94,12 @@ export default function SubScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 36, height: 36, borderRadius: 8,
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: `1px solid rgba(255, 255, 255, 0.1)`,
+              background: 'rgba(255,255,255,0.06)',
+              border: `1px solid rgba(255,255,255,0.14)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               backdropFilter: 'blur(5px)',
             }}>
-              <span style={{ fontSize: 15, fontWeight: 800, color: G, fontFamily: 'monospace' }}>{devices}</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: ACCENT, fontFamily: 'monospace' }}>{devices}</span>
             </div>
             <div>
               <p style={{ fontSize: 13, fontWeight: 800, color: TEXT, fontFamily: 'monospace', letterSpacing: 0.4 }}>
@@ -128,7 +130,7 @@ export default function SubScreen() {
                 onClick={() => setDevIdx(i)}
                 style={{
                   fontSize: 10, fontFamily: 'monospace', cursor: 'pointer',
-                  color: i === devIdx ? TEXT : MUTED,
+                  color: i === devIdx ? ACCENT : MUTED,
                   fontWeight: i === devIdx ? 800 : 500,
                   letterSpacing: 0.5,
                   transition: 'color 0.2s',
@@ -149,7 +151,7 @@ export default function SubScreen() {
           { icon: Star,   text: 'WireGuard' },
         ].map(({ icon: Icon, text }) => (
           <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Icon size={12} color={TEXT} />
+            <Icon size={12} color={ACCENT} />
             <span style={{ color: TEXT2, fontWeight: 600, letterSpacing: 0.5 }}>{text}</span>
           </div>
         ))}
@@ -168,11 +170,11 @@ export default function SubScreen() {
                 ...glass({
                   padding: '14px 12px',
                   border: selected
-                    ? `1.5px solid rgba(255, 255, 255, 0.40)`
+                    ? `1.5px solid rgba(255, 255, 255, 0.34)`
                     : `1px solid rgba(255, 255, 255, 0.08)`,
                   background: selected
-                    ? 'rgba(255, 255, 255, 0.06)'
-                    : 'rgba(26, 26, 26, 0.85)',
+                    ? 'rgba(255,255,255,0.08)'
+                    : PANEL,
                 }),
                 textAlign: 'left',
                 position: 'relative',
@@ -194,13 +196,13 @@ export default function SubScreen() {
                 </span>
               )}
               <p style={{
-                fontSize: 10, color: selected ? TEXT2 : MUTED,
+                fontSize: 10, color: selected ? ACCENT : MUTED,
                 fontFamily: 'monospace', letterSpacing: 1.2, fontWeight: 700,
               }}>
                 // {(lang === 'ru' ? plan.labelRu : plan.labelEn).toUpperCase()}
               </p>
               <p style={{
-                fontSize: 22, fontWeight: 800, color: selected ? G : TEXT,
+                fontSize: 22, fontWeight: 800, color: selected ? ACCENT : TEXT,
                 lineHeight: 1, marginTop: 4,
                 fontFamily: 'monospace', letterSpacing: -0.3,
                 transition: 'color 0.2s',
@@ -220,7 +222,7 @@ export default function SubScreen() {
       {/* CTA (в стиле ActiveHero.openInHapp — белая на чёрном) */}
       <button
         onClick={() => {
-          activate(PLAN_KEYS[planIdx], DEVICES[devIdx], { countryCode: 'NL', name: 'Amsterdam', flag: '🇳🇱' })
+          activate(PLAN_KEYS[planIdx], DEVICES[devIdx], { countryCode: 'NL', name: 'Amsterdam', flag: 'NL' })
           navigate('/')
         }}
         style={{
@@ -242,7 +244,7 @@ export default function SubScreen() {
         </div>
         <div style={{
           width: 32, height: 32, borderRadius: 8,
-          background: 'rgba(14,14,14,0.08)',
+            background: 'rgba(14,14,14,0.10)',
           border: '1px solid rgba(14,14,14,0.12)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
